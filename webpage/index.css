@@ -1,0 +1,47 @@
+
+:root {
+    --bg-color-1: #1034a6;
+    --bg-color-2: #082567;
+    --bg-color-3: #0040ff;
+    --text-color: white;
+    --text-color-sub: #b3b9ff;
+    --default-font: 'Helvetica Neue', Helvetica, Tahoma, Verdana, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 16px;
+}
+
+body {
+    width: 100vw;
+    background-color: var(--bg-color-1);
+    color: var(--text-color);
+    font-family: var(--default-font);
+    font-size: 1rem;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    padding-top: 10vw;
+}
+
+#image-container {
+    width: 60%;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 0.4rem;
+}
+
+#image-container img {
+    width: 50%;
+    height: auto;
+    border-radius: 7px;
+}
