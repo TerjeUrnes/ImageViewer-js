@@ -11,7 +11,6 @@ const t79Show = {
     ALT_IMAGE_URL : "data-galleryimage",
     ALT_IMAGE_SIZE : "data-gallerysize",
     //
-    MARGIN : "5vw",
     LEFT_NAVIGATION_ARROW : "icons/caret-left-solid.svg",
     RIGHT_NAVIGATION_ARROW : "icons/caret-right-solid.svg"
 }
@@ -19,7 +18,8 @@ const t79Show = {
 const t79Style = {
     BACKGROUND_COLOR : "#ffffff33",
     BACKGROUND_BLUR : "10px",
-    BASE_FONT_SIZE : "14px"
+    BASE_FONT_SIZE : "14px",
+    MARGIN : "5vw"
 }
 
 window.addEventListener('resize', function() {
@@ -35,47 +35,91 @@ function slideshowInit() {
 }
 
 function generateSlideshowElm() {
-    t79Show.container = makeContainerElm();
-    t79Show.container.innerText = ".";
-    styleContainer("initialize");
-    t79Show.outerImageFrame = makeOuterImageFrameElm();
-    styleOuterFrame("initialize");
-    t79Show.innerImageFrame = makeInnerImageFrameElm();
-    styleInnerFrame("initialize");
-    t79Show.imageView = makeImageViewElm();
-    styleImageView("initialize");
-    t79Show.innerImageFrame.appendChild(t79Show.imageView);
-    t79Show.outerImageFrame.appendChild(t79Show.innerImageFrame);
-    t79Show.container.appendChild(t79Show.outerImageFrame);
-    document.body.appendChild(t79Show.container);
+    t79Show.containerElm = makeContainerElm();
+    t79Show.leftControllersContainerElm = makeLeftControllersContainerElm();
+    t79Show.previousImageButtonElm = makePreviousImageButtonElm();
+    t79Show.outerImageFrameElm = makeOuterImageFrameElm();
+    t79Show.innerImageFrameElm = makeInnerImageFrameElm();
+    t79Show.imageViewElm = makeImageViewElm();
+    t79Show.rightControllersContainerElm = makeRightControllersContainerElm();
+    t79Show.nextImageButtonElm = makeNextImageButtonElm();
 
-    // const test = document.createElement("div");
-    // test.style.webkitBackdrop
+    t79Show.leftControllersContainerElm.appendChild(t79Show.previousImageButtonElm);
+    t79Show.containerElm.appendChild(t79Show.leftControllersContainerElm);
+    t79Show.innerImageFrameElm.appendChild(t79Show.imageViewElm);
+    t79Show.outerImageFrameElm.appendChild(t79Show.innerImageFrameElm);
+    t79Show.containerElm.appendChild(t79Show.outerImageFrameElm);
+    t79Show.rightControllersContainerElm.appendChild(t79Show.nextImageButtonElm);
+    t79Show.containerElm.appendChild(t79Show.rightControllersContainerElm);
+    document.body.appendChild(t79Show.containerElm);
+
+    styleContainerElm("initialize");
+    styleControllerContainerElm(t79Show.leftControllersContainerElm, "initialize");
+    styleNavigationButtonElm(t79Show.previousImageButtonElm, "initialize");
+    styleOuterFrameElm("initialize");
+    styleInnerFrameElm("initialize");
+    styleImageViewElm("initialize");
+    styleControllerContainerElm(t79Show.rightControllersContainerElm, "initialize");
+    styleNavigationButtonElm(t79Show.nextImageButtonElm, "initialize");
 }
 
 function makeContainerElm() {
-    const container = document.createElement("div");
-    container.id = "slideshow-container";
-    container.addEventListener("click", goOutOfFullscreen);
-    return container;
+    const containerElm = document.createElement("div");
+    containerElm.id = "slideshow-container";
+    containerElm.addEventListener("click", goOutOfFullscreen);
+    return containerElm;
+}
+
+function makeLeftControllersContainerElm() {
+    const leftContainerElm = document.createElement("div");
+    leftContainerElm.id = "slideshow-left-controllers-container";
+    return leftContainerElm;
+}
+
+function makePreviousImageButtonElm() {
+    const previousButElm = document.createElement("img");
+    previousButElm.id = "slideshow-previous-image-button";
+    previousButElm.src = t79Show.LEFT_NAVIGATION_ARROW;
+    previousButElm.addEventListener("click", (e) => {
+        e.stopPropagation();
+        goToPreviousImage();
+    });
+    return previousButElm;
 }
 
 function makeOuterImageFrameElm() {
-    const outerFrame = document.createElement("div");
-    outerFrame.id = "slideshow-outer-frame";
-    return outerFrame;
+    const outerFrameElm = document.createElement("div");
+    outerFrameElm.id = "slideshow-outer-frame";
+    return outerFrameElm;
 }
 
 function makeInnerImageFrameElm() {
-    const innerFrame = document.createElement("div");
-    innerFrame.id = "slideshow-inner-frame";
-    return innerFrame;
+    const innerFrameElm = document.createElement("div");
+    innerFrameElm.id = "slideshow-inner-frame";
+    return innerFrameElm;
 }
 
 function makeImageViewElm() {
-    const imageView = document.createElement("img");
-    imageView.id = "slideshow-image-view";
-    return imageView;
+    const imageViewElm = document.createElement("img");
+    imageViewElm.id = "slideshow-image-view";
+    return imageViewElm;
+}
+
+function makeRightControllersContainerElm() {
+    const rightContainerElm = document.createElement("div");
+    rightContainerElm.id = "slideshow-right-controllers-container";
+    return rightContainerElm;
+}
+
+function makeNextImageButtonElm() {
+    const nextButElm = document.createElement("img");
+    nextButElm.id = "slideshow-next-image-button";
+    nextButElm.src = t79Show.RIGHT_NAVIGATION_ARROW;
+    nextButElm.addEventListener("click", (e) => {
+        e.stopPropagation();
+        goToNextImage();
+    });
+    return nextButElm;
 }
 
 function getImages() {
@@ -129,120 +173,188 @@ function makeImagesReady(searchResult) {
     var previousImage;
     searchResult.forEach(element => {
         imageCount++;
-        styleSelectedImage(element, "initialize");
+        styleSelectedImageElm(element, "initialize");
         element.addEventListener("click", goIntoFullscreen);
         element.setAttribute("data-galleryimageid", imageCount);
         if (previousImage) {
             previousImage.setAttribute("data-nextgalleryimage", imageCount);
             element.setAttribute("data-previousgalleryimage", previousImage.getAttribute("data-galleryimageid"));
         }
-        else {
-            element.setAttribute("data-previousgalleryimage", undefined);
-        }
         previousImage = element;
     });
 }
 
+function runSlideshow() {
+    t79Show.slideshowInterval = window.setInterval(goToNextImage, 6000, "next");
+}
+
+function stopSlideshow() {
+    window.clearInterval(t79Show.slideshowInterval);
+}
+
 function goIntoFullscreen(e) {
-    styleContainer("goesIntoFullscreen");
-    styleSelectedImage(this, "goesIntoFullscreen");
-    t79Show.selectedImage = this;
-    t79Show.imageView.src = this.src;
+    styleContainerElm("goesIntoFullscreen");
+    styleSelectedImageElm(this, "goesIntoFullscreen");
+    t79Show.selectedImageElm = this;
+    t79Show.imageViewElm.src = this.src;
+    updateNavigationButtons();
+    positionImageView();
+    runSlideshow();
+}
+
+function goToPreviousImage() {
+    const previousImageId = t79Show.selectedImageElm.getAttribute("data-previousgalleryimage");
+    const previousImageElm = document.querySelector("[data-galleryimageid='" + previousImageId + "']");
+    changeSelectedImage(previousImageElm);
+    t79Show.imageViewElm.src = previousImageElm.src;
+    console.log(previousImageElm);
+    updateNavigationButtons();
+    positionImageView();
+}
+
+function goToNextImage() {
+    const nextImageId = t79Show.selectedImageElm.getAttribute("data-nextgalleryimage");
+    const nextImageElm = document.querySelector("[data-galleryimageid='" + nextImageId + "']");
+    changeSelectedImage(nextImageElm);
+    t79Show.imageViewElm.src = nextImageElm.src;
+    console.log(nextImageElm);
+    updateNavigationButtons();
     positionImageView();
 }
 
 function positionImageView() {
-    const imageWidth = t79Show.selectedImage.getAttribute("width");
-    const imageHeight = t79Show.selectedImage.getAttribute("height");
+    const imageWidth = t79Show.selectedImageElm.getAttribute("width");
+    const imageHeight = t79Show.selectedImageElm.getAttribute("height");
     const imageRatio = imageWidth / imageHeight;
-    const outerFrameWidth = t79Show.outerImageFrame.clientWidth;
-    const outerFrameHeight = t79Show.outerImageFrame.clientHeight;
+    const outerFrameWidth = t79Show.outerImageFrameElm.clientWidth;
+    const outerFrameHeight = t79Show.outerImageFrameElm.clientHeight;
     const outerFrameRatio = outerFrameWidth / outerFrameHeight;
 
     if (imageWidth < outerFrameWidth && imageHeight < outerFrameHeight) {
-        t79Show.imageView.width = imageWidth;
-        t79Show.imageView.height = imageHeight;
+        t79Show.imageViewElm.width = imageWidth;
+        t79Show.imageViewElm.height = imageHeight;
     }
     else if (imageRatio < outerFrameRatio) {
-        t79Show.innerImageFrame.style.width = `${outerFrameHeight * imageRatio}px`;
-        t79Show.innerImageFrame.style.height = `${outerFrameHeight}px`;
-        t79Show.imageView.width = outerFrameHeight * imageRatio;
-        t79Show.imageView.height = outerFrameHeight;
+        t79Show.innerImageFrameElm.style.width = `${outerFrameHeight * imageRatio}px`;
+        t79Show.innerImageFrameElm.style.height = `${outerFrameHeight}px`;
+        t79Show.imageViewElm.width = outerFrameHeight * imageRatio;
+        t79Show.imageViewElm.height = outerFrameHeight;
     }
     else {
-        t79Show.innerImageFrame.style.width = `${outerFrameWidth}px`;
-        t79Show.innerImageFrame.style.height = `${outerFrameWidth / imageRatio}px`;
-        t79Show.imageView.width = outerFrameWidth;
-        t79Show.imageView.height = outerFrameWidth / imageRatio; 
+        t79Show.innerImageFrameElm.style.width = `${outerFrameWidth}px`;
+        t79Show.innerImageFrameElm.style.height = `${outerFrameWidth / imageRatio}px`;
+        t79Show.imageViewElm.width = outerFrameWidth;
+        t79Show.imageViewElm.height = outerFrameWidth / imageRatio; 
     }
 }
 
 function goOutOfFullscreen(e) {
-    styleContainer("goesOutOfFullscreen");
-    styleSelectedImage(t79Show.selectedImage, "comesOutOfFullscreen");
-    t79Show.selectedImage = undefined;
+    styleContainerElm("goesOutOfFullscreen");
+    styleSelectedImageElm(t79Show.selectedImageElm, "comesOutOfFullscreen");
+    t79Show.selectedImageElm = undefined;
 }
 
-function changeSelectedImage(element) {
-    if (t79Show.selectedImage) {
-        styleSelectedImage(t79Show.selectedImage, "areDeselected");
+function changeSelectedImage(imageElm) {
+    if (t79Show.selectedImageElm) {
+        styleSelectedImageElm(t79Show.selectedImageElm, "areDeselected");
     }
-    t79Show.selectedImage = element;
-    styleSelectedImage(element, "becomingSelected");
+    t79Show.selectedImageElm = imageElm;
+    styleSelectedImageElm(imageElm, "becomingSelected");
 }
 
-function styleContainer(state) {
+function updateNavigationButtons() {
+    if (t79Show.selectedImageElm.getAttribute("data-previousgalleryimage") == undefined) {
+        styleNavigationButtonElm(t79Show.previousImageButtonElm, "hide");
+    }
+    else {
+        styleNavigationButtonElm(t79Show.previousImageButtonElm, "show");
+    }
+    if (t79Show.selectedImageElm.getAttribute("data-nextgalleryimage") == undefined) {
+        styleNavigationButtonElm(t79Show.nextImageButtonElm, "hide");
+    }
+    else {
+        styleNavigationButtonElm(t79Show.nextImageButtonElm, "show");
+    }
+}
+
+function styleContainerElm(state) {
     switch (state) {
         case "initialize":
-            t79Show.container.style.backgroundColor = t79Style.BACKGROUND_COLOR;
-            t79Show.container.style.position = "fixed";
-            t79Show.container.style.top = 0;
-            t79Show.container.style.left = 0;
-            t79Show.container.style.width = "100vw";
-            t79Show.container.style.height = "100vh";
-            t79Show.container.style.fontSize = t79Style.BASE_FONT_SIZE;
-            t79Show.container.style.display = "none";
-            t79Show.container.style.flexFlow = "row nowrap";
-            t79Show.container.style.justifyContent = "center";
-            t79Show.container.style.alignItems = "center";
-            t79Show.container.style.boxSizing = "border-box";
-            t79Show.container.style.overflow = "hidden";
-            t79Show.container.style.cursor = "zoom-out";
-            t79Show.container.style.webkitBackdropFilter = `blur(${t79Style.BACKGROUND_BLUR})`;
-            t79Show.container.style.backdropFilter = `blur(${t79Style.BACKGROUND_BLUR})`;
+            t79Show.containerElm.style.backgroundColor = t79Style.BACKGROUND_COLOR;
+            t79Show.containerElm.style.position = "fixed";
+            t79Show.containerElm.style.top = 0;
+            t79Show.containerElm.style.left = 0;
+            t79Show.containerElm.style.width = "100vw";
+            t79Show.containerElm.style.height = "100vh";
+            t79Show.containerElm.style.fontSize = t79Style.BASE_FONT_SIZE;
+            t79Show.containerElm.style.display = "none";
+            t79Show.containerElm.style.flexFlow = "row nowrap";
+            t79Show.containerElm.style.justifyContent = "space-between";
+            t79Show.containerElm.style.alignItems = "center";
+            t79Show.containerElm.style.boxSizing = "border-box";
+            t79Show.containerElm.style.overflow = "hidden";
+            t79Show.containerElm.style.cursor = "zoom-out";
+            t79Show.containerElm.style.webkitBackdropFilter = `blur(${t79Style.BACKGROUND_BLUR})`;
+            t79Show.containerElm.style.backdropFilter = `blur(${t79Style.BACKGROUND_BLUR})`;
+            t79Show.containerElm.style.padding = t79Style.MARGIN;
             break;
         case "goesIntoFullscreen":
-            t79Show.container.style.display = "flex";
+            t79Show.containerElm.style.display = "flex";
             break;
         case "goesOutOfFullscreen":
-            t79Show.container.style.display = "none";
+            t79Show.containerElm.style.display = "none";
     }
 }
 
-function styleOuterFrame(state) {
+function styleControllerContainerElm(containerElm, state) {
     switch (state) {
         case "initialize":
-            t79Show.outerImageFrame.style.display = "flex";
-            t79Show.outerImageFrame.style.flexFlow = "column nowrap";
-            t79Show.outerImageFrame.style.justifyContent = "center";
-            t79Show.outerImageFrame.style.alignItems = "center";
-            t79Show.outerImageFrame.style.width = "100%";
-            t79Show.outerImageFrame.style.height = "100%";
+            containerElm.style.display = "flex";
+            containerElm.style.flexFlow = "column nowrap";
+            containerElm.style.justifyContent = "center";
+            containerElm.style.alignItems = "center";
+            containerElm.style.position = "relative";
     }
 }
 
-function styleInnerFrame(state) {
+function styleNavigationButtonElm(buttonElm, state) {
+    switch (state) {
+        case "initialize":
+            buttonElm.style.width = "2rem";
+            buttonElm.style.height = "auto";
+            break;
+        case "show":
+            buttonElm.style.opacity = 1;
+            break;
+        case "hide":
+            buttonElm.style.opacity = 0;
+    }
+}
+
+function styleOuterFrameElm(state) {
+    switch (state) {
+        case "initialize":
+            t79Show.outerImageFrameElm.style.display = "flex";
+            t79Show.outerImageFrameElm.style.flexFlow = "column nowrap";
+            t79Show.outerImageFrameElm.style.justifyContent = "center";
+            t79Show.outerImageFrameElm.style.alignItems = "center";
+            t79Show.outerImageFrameElm.style.width = "100%";
+            t79Show.outerImageFrameElm.style.height = "100%";
+    }
+}
+
+function styleInnerFrameElm(state) {
     switch (state) {
         case "initialize": 
-            t79Show.innerImageFrame.style.display = "flex";
-            t79Show.innerImageFrame.style.flexFlow = "column nowrap";
-            t79Show.innerImageFrame.style.justifyContent = "center";
-            t79Show.innerImageFrame.style.alignItems = "center";
-            t79Show.innerImageFrame.style.width = "100%";
+            t79Show.innerImageFrameElm.style.display = "flex";
+            t79Show.innerImageFrameElm.style.flexFlow = "column nowrap";
+            t79Show.innerImageFrameElm.style.justifyContent = "center";
+            t79Show.innerImageFrameElm.style.alignItems = "center";
+            t79Show.innerImageFrameElm.style.width = "100%";
     }
 }
 
-function styleSelectedImage(image, state) {
+function styleSelectedImageElm(image, state) {
     switch (state) {
         case "initialize":
             image.style.cursor = "zoom-in";
@@ -257,7 +369,7 @@ function styleSelectedImage(image, state) {
     }
 }
 
-function styleImageView(state) {
+function styleImageViewElm(state) {
     switch (state) {
         case "initialize":
             break;
