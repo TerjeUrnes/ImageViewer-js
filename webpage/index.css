@@ -1,8 +1,6 @@
 
 :root {
-    --bg-color-1: #1034a6;
-    --bg-color-2: #082567;
-    --bg-color-3: #0040ff;
+    --bg-color-1: #0d253f;
     --text-color: white;
     --text-color-sub: #b3b9ff;
     --default-font: 'Helvetica Neue', Helvetica, Tahoma, Verdana, sans-serif;
@@ -28,20 +26,20 @@ body {
     flex-flow: column nowrap;
     justify-content: flex-start;
     align-items: center;
-    padding-top: 10vw;
+    padding: 10vw;
 }
 
 #image-container {
-    width: 60%;
+    width: 100%;
     display: flex;
-    flex-flow: row nowrap;
-    justify-content: center;
+    flex-flow: row wrap;
+    justify-content: flex-start;
     align-items: flex-start;
-    gap: 0.4rem;
+    gap: 0.6rem;
 }
 
 #image-container img {
-    width: 50%;
+    width: calc(33.3% - 0.4rem);
     height: auto;
     border-radius: 7px;
 }
