@@ -45,8 +45,7 @@ function generateSlideshowElm() {
     t79Show.innerContainerElm = makeInnerContainerElm();
     t79Show.previousImageButtonElm = makePreviousImageButtonElm();
     t79Show.slideshowControllerContainerElm = makeSlideshowControllerContainer();
-    t79Show.slideshowPlayButtonElm = makeSlideshowPlayButtonElm();
-    t79Show.slideshowPauseButtonElm = makeSlideshowPauseButtonElm();
+    t79Show.slideshowPlayPauseButtonElm = makeSlideshowPlayPauseButtonElm();
     t79Show.slideshowTimerContainerElm = makeSlideshowTimerContainerElm();
     t79Show.slideshowIncreaseButtonElm = makeSlideshowIncreaseButtonElm();
     t79Show.slideshowDecreaseButtonElm = makeSlideshowDecreaseButtonElm();
@@ -57,8 +56,7 @@ function generateSlideshowElm() {
     t79Show.nextImageButtonElm = makeNextImageButtonElm();
 
 
-    t79Show.slideshowControllerContainerElm.appendChild(t79Show.slideshowPlayButtonElm);
-    t79Show.slideshowControllerContainerElm.appendChild(t79Show.slideshowPauseButtonElm);
+    t79Show.slideshowControllerContainerElm.appendChild(t79Show.slideshowPlayPauseButtonElm);    
     t79Show.slideshowControllerContainerElm.appendChild(t79Show.slideshowTimerContainerElm);
     t79Show.slideshowTimerContainerElm.appendChild(t79Show.slideshowIncreaseButtonElm);
     t79Show.slideshowTimerContainerElm.appendChild(t79Show.slideshowTimerLabelElm);
@@ -76,8 +74,8 @@ function generateSlideshowElm() {
     styleContainerElm("initialize");
     styleInnerContainerElm("initialize");
     styleSlideshowControllersContainerElm("initialize");
-    styleSliderControllersButtonsElm(t79Show.slideshowPlayButtonElm, "initialize");
-    styleSliderControllersButtonsElm(t79Show.slideshowPauseButtonElm, "initialize");
+    styleSlideshowTimerContainerElm("initialize");
+    styleSliderControllersButtonsElm(t79Show.slideshowPlayPauseButtonElm, "initialize");
     styleSliderControllersButtonsElm(t79Show.slideshowIncreaseButtonElm, "initialize");
     styleSliderControllersButtonsElm(t79Show.slideshowTimerLabelElm, "initialize");
     styleSliderControllersButtonsElm(t79Show.slideshowDecreaseButtonElm, "initialize");
@@ -128,26 +126,21 @@ function makeSlideshowControllerContainer() {
     return controllerElm;
 }
 
-function makeSlideshowPlayButtonElm() {
+function makeSlideshowPlayPauseButtonElm() {
     const playButElm = document.createElement("img");
     playButElm.id = "slideshow-play-button";
     playButElm.src = t79Show.SLIDESHOW_PLAY;
+    playButElm.setAttribute("data-playing", false);
     playButElm.addEventListener("click", (e) => {
         e.stopPropagation();
-        runSlideshow();
+        if (e.target.getAttribute("data-playing") == "true") {
+            stopSlideshow();
+        }
+        else {
+            runSlideshow();
+        }
     });
     return playButElm;
-}
-
-function makeSlideshowPauseButtonElm() {
-    const pauseButElm = document.createElement("img");
-    pauseButElm.id = "slideshow-play-button";
-    pauseButElm.src = t79Show.SLIDESHOW_PAUSE;
-    pauseButElm.addEventListener("click", (e) => {
-        e.stopPropagation();
-        stopSlideshow();
-    });
-    return pauseButElm;
 }
 
 function makeSlideshowTimerContainerElm() {
@@ -181,7 +174,7 @@ function makeSlideshowDecreaseButtonElm() {
 function makeSlideshowTimerLabelElm() {
     const label = document.createElement("div");
     label.id = "slideshow-timer-label";
-    label.innerText = t79Show.slideshowDuration + "s";
+    label.innerText = t79Show.slideshowDuration;
     return label;
 }
 
@@ -201,12 +194,6 @@ function makeImageViewElm() {
     const imageViewElm = document.createElement("img");
     imageViewElm.id = "slideshow-image-view";
     return imageViewElm;
-}
-
-function makeRightControllersContainerElm() {
-    const rightContainerElm = document.createElement("div");
-    rightContainerElm.id = "slideshow-right-controllers-container";
-    return rightContainerElm;
 }
 
 function makeNextImageButtonElm() {
@@ -297,29 +284,43 @@ function makeImagesReady(searchResult) {
 }
 
 function increaseSlideshowDuration() {
-    t79Show.slideshowDuration -= 1;
-    updateSlideshowDuration();
-}
-
-function decreaseSlideshowDuration() {
     t79Show.slideshowDuration += 1;
     updateSlideshowDuration();
 }
 
+function decreaseSlideshowDuration() {
+    t79Show.slideshowDuration -= 1;
+    updateSlideshowDuration();
+}
+
 function updateSlideshowDuration() {
-    t79Show.slideshowTimerLabelElm.innerText = t79Show.slideshowDuration + "s";
-    stopSlideshow();
-    runSlideshow()
+    t79Show.slideshowTimerLabelElm.innerText = t79Show.slideshowDuration;
+    changeSlideshowDuration();
 }
 
 function runSlideshow() {
+    if (t79Show.slideshowPlayPauseButtonElm.getAttribute("data-playing") == "true") {
+        return;
+    }
     t79Show.slideshowInterval = window.setInterval(goToNextImage, t79Show.slideshowDuration * 1000);
     t79Show.slideshowRunning = true;
+    t79Show.slideshowPlayPauseButtonElm.src = t79Show.SLIDESHOW_PAUSE;
+    t79Show.slideshowPlayPauseButtonElm.setAttribute("data-playing", true);
+}
+
+function changeSlideshowDuration() {
+    if (t79Show.slideshowPlayPauseButtonElm.getAttribute("data-playing") == "false") {
+        return;
+    }
+    window.clearInterval(t79Show.slideshowInterval);
+    t79Show.slideshowInterval = window.setInterval(goToNextImage, t79Show.slideshowDuration * 1000);
 }
 
 function stopSlideshow() {
     window.clearInterval(t79Show.slideshowInterval);
     t79Show.slideshowRunning = false;
+    t79Show.slideshowPlayPauseButtonElm.src = t79Show.SLIDESHOW_PLAY;
+    t79Show.slideshowPlayPauseButtonElm.setAttribute("data-playing", false);
 }
 
 function goIntoFullscreen(e) {
@@ -418,6 +419,8 @@ function positionImageView() {
         t79Show.imageViewElm.width = outerFrameWidth;
         t79Show.imageViewElm.height = outerFrameWidth / imageRatio; 
     }
+
+    //styleImageViewElmClipPath(imageWidth, imageHeight, outerFrameWidth);
 }
 
 function goOutOfFullscreen(e) {
@@ -512,13 +515,23 @@ function styleSlideshowControllersContainerElm(state) {
         case "initialize":
             t79Show.slideshowControllerContainerElm.style.position = "absolute";
             t79Show.slideshowControllerContainerElm.style.left = "1em";
-            t79Show.slideshowControllerContainerElm.style.bottom = "calc(50% + 2.5em)";
+            t79Show.slideshowControllerContainerElm.style.bottom = "calc(50% + 3.5em)";
             t79Show.slideshowControllerContainerElm.style.display = "flex";
             t79Show.slideshowControllerContainerElm.style.flexFlow = "column nowrap";
             t79Show.slideshowControllerContainerElm.style.justifyContent = "flex-start";
             t79Show.slideshowControllerContainerElm.style.alignItems = "center";
-            t79Show.slideshowControllerContainerElm.style.gap = "0.3eem";
+            t79Show.slideshowControllerContainerElm.style.gap = "1em";
 
+    }
+}
+
+function styleSlideshowTimerContainerElm(state) {
+    switch (state) {
+        case "initialize":
+            t79Show.slideshowTimerContainerElm.style.display = "flex";
+            t79Show.slideshowTimerContainerElm.style.flexFlow = "column nowrap";
+            t79Show.slideshowTimerContainerElm.style.justifyContent = "center";
+            t79Show.slideshowTimerContainerElm.style.alignItems = "center";
     }
 }
 
@@ -597,6 +610,50 @@ function styleImageViewElm(state) {
         case "initialize":
             break;
     }
+}
+
+function styleImageViewElmClipPath(imageWidth, imageHeight, outerFrameWidth) {
+    if (imageWidth < outerFrameWidth - 500) {
+        t79Show.imageViewElm.style.clipPath = "none";
+        return;
+    }
+
+    const iW = imageWidth;
+    const iH = imageHeight;
+
+    const bH = 50;
+
+    const pH = iH * 0.5 - bH * 0.5;
+    const pL = iH * 0.5 + bH * 0.5;
+
+    const c = 8;
+
+    const p0 = 'M0,0';
+    const p5 = 'L0,' + iH;
+    const p6 = 'L' + iW + ',' + iH;
+    const p7 = 'L' + iW + ',0';
+
+    let path1 = '';
+
+    const p1a = 'L0,' + (pH - c);
+    const p1b = 'Q0,' + pH;
+    const p1c = '' + c + ',' + pH;
+    const p2a = 'L' + 50 + ',' + pH;
+    const p2b = 'Q' + (50 + c) + ',' + pH;
+    const p2c = '' + (50 + c) + ',' + (pH + c);
+    const p3a = 'L' + (50 + c) + ',' + (pL - c);
+    const p3b = 'Q' + (50 + c) + ',' + (pL);
+    const p3c = '' + 50 + ',' + pL;
+    const p4a = 'L' + c + ',' + pL;
+    const p4b = 'Q0,' + pL;
+    const p4c = '0,' + (pL + c);
+    path1 = p1a + ' ' + p1b + ' ' + p1c + ' ' + p2a + ' ' + p2b + ' ' + p2c + ' ' + p3a + ' ' + p3b + ' ' + p3c + ' ' + p4a + ' ' + p4b + ' ' + p4c;
+
+    const path = "'" + p0 + ' ' + path1 + ' ' + p5 + ' ' + p6 + ' ' + p7 + " Z'";
+
+    console.log(path);
+
+    t79Show.imageViewElm.style.clipPath = 'path(' + path + ')';
 }
 
 
