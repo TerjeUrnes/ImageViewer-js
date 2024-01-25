@@ -420,7 +420,7 @@ function positionImageView() {
         t79Show.imageViewElm.height = outerFrameWidth / imageRatio; 
     }
 
-    //styleImageViewElmClipPath(imageWidth, imageHeight, outerFrameWidth);
+    styleImageViewElmClipPath(imageWidth, imageHeight, outerFrameWidth);
 }
 
 function goOutOfFullscreen(e) {
@@ -515,7 +515,7 @@ function styleSlideshowControllersContainerElm(state) {
         case "initialize":
             t79Show.slideshowControllerContainerElm.style.position = "absolute";
             t79Show.slideshowControllerContainerElm.style.left = "1em";
-            t79Show.slideshowControllerContainerElm.style.bottom = "calc(50% + 3.5em)";
+            t79Show.slideshowControllerContainerElm.style.bottom = "calc(50% + 5em)";
             t79Show.slideshowControllerContainerElm.style.display = "flex";
             t79Show.slideshowControllerContainerElm.style.flexFlow = "column nowrap";
             t79Show.slideshowControllerContainerElm.style.justifyContent = "flex-start";
@@ -613,20 +613,39 @@ function styleImageViewElm(state) {
 }
 
 function styleImageViewElmClipPath(imageWidth, imageHeight, outerFrameWidth) {
-    if (imageWidth < outerFrameWidth - 500) {
+    if (imageWidth < outerFrameWidth - 300) {
         t79Show.imageViewElm.style.clipPath = "none";
         return;
     }
 
-    const iW = imageWidth;
-    const iH = imageHeight;
+    const showControllerRect = t79Show.slideshowControllerContainerElm.getBoundingClientRect();
+    const navigationButLeftRect = t79Show.previousImageButtonElm.getBoundingClientRect();
+    const navigationButRightRect = t79Show.nextImageButtonElm.getBoundingClientRect();
+    const imageViewRect = t79Show.imageViewElm.getBoundingClientRect();
 
-    const bH = 50;
+    if (Math.max(showControllerRect.right, navigationButLeftRect.right) < imageViewRect.x - 20) {
+        t79Show.imageViewElm.style.clipPath = "none";
+        return;
+    }
 
-    const pH = iH * 0.5 - bH * 0.5;
-    const pL = iH * 0.5 + bH * 0.5;
+    const iW = imageViewRect.right - imageViewRect.x;
+    const iH = imageViewRect.bottom - imageViewRect.y;
+    const iL = imageViewRect.x;
+    const iR = imageViewRect.right;
 
-    const c = 8;
+    const scT = showControllerRect.y - imageViewRect.y - 15;
+    const scB = showControllerRect.bottom - imageViewRect.y + 10;
+    const scR = showControllerRect.right;
+
+    const nlT = navigationButLeftRect.y - imageViewRect.y - 20;
+    const nlB = navigationButLeftRect.bottom - imageViewRect.y + 20;
+    const nlR = navigationButLeftRect.right;
+
+    const nrT = navigationButRightRect.y - imageViewRect.y - 20;
+    const nrB = navigationButRightRect.bottom - imageViewRect.y + 20;
+    const nrL = navigationButRightRect.x;
+
+    const c = 3;
 
     const p0 = 'M0,0';
     const p5 = 'L0,' + iH;
@@ -634,24 +653,66 @@ function styleImageViewElmClipPath(imageWidth, imageHeight, outerFrameWidth) {
     const p7 = 'L' + iW + ',0';
 
     let path1 = '';
+    const dept = scR - iL + 10;
+    if (dept > 0) {
+        const p1a = 'L0,' + (scT - c);
+        const p1b = 'Q0,' + scT;
+        const p1c = '' + c + ',' + scT;
+        const p2a = 'L' + (dept - c) + ',' + scT;
+        const p2b = 'Q' + dept + ',' + scT;
+        const p2c = '' + dept + ',' + (scT + c);
+        const p3a = 'L' + dept + ',' + (scB - c);
+        const p3b = 'Q' + dept + ',' + scB;
+        const p3c = '' + (dept - c) + ',' + scB;
+        const p4a = 'L' + c + ',' + scB;
+        const p4b = 'Q0,' + scB;
+        const p4c = '0,' + (scB + c)
 
-    const p1a = 'L0,' + (pH - c);
-    const p1b = 'Q0,' + pH;
-    const p1c = '' + c + ',' + pH;
-    const p2a = 'L' + 50 + ',' + pH;
-    const p2b = 'Q' + (50 + c) + ',' + pH;
-    const p2c = '' + (50 + c) + ',' + (pH + c);
-    const p3a = 'L' + (50 + c) + ',' + (pL - c);
-    const p3b = 'Q' + (50 + c) + ',' + (pL);
-    const p3c = '' + 50 + ',' + pL;
-    const p4a = 'L' + c + ',' + pL;
-    const p4b = 'Q0,' + pL;
-    const p4c = '0,' + (pL + c);
-    path1 = p1a + ' ' + p1b + ' ' + p1c + ' ' + p2a + ' ' + p2b + ' ' + p2c + ' ' + p3a + ' ' + p3b + ' ' + p3c + ' ' + p4a + ' ' + p4b + ' ' + p4c;
+        path1 = p1a + ' ' + p1b + ' ' + p1c + ' ' + p2a + ' ' + p2b + ' ' + p2c + ' ' + p3a + ' ' + p3b + ' ' + p3c + ' ' + p4a + ' ' + p4b + ' ' + p4c;
 
-    const path = "'" + p0 + ' ' + path1 + ' ' + p5 + ' ' + p6 + ' ' + p7 + " Z'";
+    }
 
-    console.log(path);
+    let path2 = '';
+    const depth = nlR - iL + 15;
+    if (depth > 0 && t79Show.previousImageButtonElm.style.opacity > 0) {
+        const p5a = 'L0,' + (nlT - c);
+        const p5b = 'Q0,' + nlT;
+        const p5c = '' + c + ',' + nlT;
+        const p6a = 'L' + (depth - c) + ',' + nlT;
+        const p6b = 'Q' + depth + ',' + nlT;
+        const p6c = '' + depth + ',' + (nlT + c);
+        const p7a = 'L' + depth + ',' + (nlB - c);
+        const p7b = 'Q' + depth + ',' + nlB;
+        const p7c = '' + (depth - c) + ',' + nlB;
+        const p8a = 'L' + c + ',' + nlB;
+        const p8b = 'Q0,' + nlB;
+        const p8c = '0,' + (nlB + c);
+
+        path2 = p5a + ' ' + p5b + ' ' + p5c + ' ' + p6a + ' ' + p6b + ' ' + p6c + ' ' + p7a + ' ' + p7b + ' ' + p7c + ' ' + p8a + ' ' + p8b + ' ' + p8c;
+    }
+
+    let path3 = '';
+    const depthe = iR - nrL + 15; 
+    if (depthe > 0 && t79Show.nextImageButtonElm.style.opacity > 0) {
+        const p9a = 'L' + iW + ',' + (nrB + c);
+        const p9b = 'Q' + iW + ',' + nrB;
+        const p9c = '' + (iW - c) + ',' + nrB;
+        const p10a = 'L' + (iW - depthe + c) + ',' + nrB;
+        const p10b = 'Q' + (iW - depthe) + ',' + nrB;
+        const p10c = '' + (iW - depthe) + ',' + (nrB - c);
+        const p11a = 'L' + (iW - depthe) + ',' + (nrT + c);
+        const p11b = 'Q' + (iW - depthe) + ',' + nrT;
+        const p11c = '' + (iW - depthe + c) + ',' + nrT;
+        const p12a = 'L' + (iW - c) + ',' + nrT;
+        const p12b = 'Q' + iW + ',' + nrT;
+        const p12c = '' + iW + ',' + (nrT - c);
+
+        path3 = p9a + ' ' + p9b + ' ' + p9c + ' ' + p10a + ' ' + p10b + ' ' + p10c + ' ' + p11a + ' ' + p11b + ' ' + p11c + ' ' + p12a + ' ' + p12b + ' ' + p12c;
+    }
+
+    
+
+    const path = "'" + p0 + ' ' + path1 + ' ' + path2 + ' ' + p5 + ' ' + p6 + ' ' + path3 + p7 + " Z'";
 
     t79Show.imageViewElm.style.clipPath = 'path(' + path + ')';
 }
