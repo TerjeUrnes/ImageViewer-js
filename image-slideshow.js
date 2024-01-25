@@ -5,6 +5,7 @@ const t79Show = {
     LOOP : false,
     NAVIGATION_CONTROLS : true,
     SLIDESHOW_CONTROLS : true,
+    THUMBNAIL_STRIP: true,
     //
     GALLERY_TAG_ATTRIBUTE : "data-gallery",
     GALLERY_CLASS_NAME : "gallery",
@@ -21,7 +22,7 @@ const t79Show = {
 }
 
 const t79Style = {
-    BACKGROUND_COLOR : "#00000066",
+    BACKGROUND_COLOR : "#00000099",
     BACKGROUND_BLUR : "10px",
     BASE_FONT_SIZE : "14px",
     MARGIN : "2em"
@@ -36,12 +37,20 @@ window.addEventListener('resize', function() {
 
 function slideshowInit() {
     t79Show.slideshowDuration = 6;
+    if(t79Show.THUMBNAIL_STRIP) {
+        t79Show.thumbnailsGenerated = false;
+    }
     generateSlideshowElm();
     getImages();
+
+    var styleElement = document.createElement("style");
+    styleElement.appendChild(document.createTextNode("#slideshow-thumbnail-strip::-webkit-scrollbar {-webkit-appearance: none; display: none;}"));
+    document.getElementsByTagName("head")[0].appendChild(styleElement);
 }
 
 function generateSlideshowElm() {
     t79Show.containerElm = makeContainerElm();
+    t79Show.thumbnailStripElm = makeThumbnailStripElm();
     t79Show.innerContainerElm = makeInnerContainerElm();
     t79Show.previousImageButtonElm = makePreviousImageButtonElm();
     t79Show.slideshowControllerContainerElm = makeSlideshowControllerContainer();
@@ -67,12 +76,19 @@ function generateSlideshowElm() {
     t79Show.innerContainerElm.appendChild(t79Show.slideshowControllerContainerElm);
     t79Show.innerContainerElm.appendChild(t79Show.previousImageButtonElm);
     t79Show.innerContainerElm.appendChild(t79Show.nextImageButtonElm);
+    t79Show.containerElm.appendChild(t79Show.thumbnailStripElm);
     t79Show.containerElm.appendChild(t79Show.innerContainerElm);
 
     document.body.appendChild(t79Show.containerElm);
 
     styleContainerElm("initialize");
     styleInnerContainerElm("initialize");
+    if (t79Show.THUMBNAIL_STRIP) {
+        styleThumbnailStripElm("initialize");
+        styleInnerContainerElm("initialize partly");
+    } else {
+        styleInnerContainerElm("initialize full");
+    }
     styleSlideshowControllersContainerElm("initialize");
     styleSlideshowTimerContainerElm("initialize");
     styleSliderControllersButtonsElm(t79Show.slideshowPlayPauseButtonElm, "initialize");
@@ -93,6 +109,15 @@ function makeContainerElm() {
     containerElm.id = "slideshow-container";
     containerElm.addEventListener("click", goOutOfFullscreen);
     return containerElm;
+}
+
+function makeThumbnailStripElm() {
+    if(t79Show.THUMBNAIL_STRIP) {
+        const thumbnailElm = document.createElement("div");
+        thumbnailElm.id = "slideshow-thumbnail-strip";
+        return thumbnailElm;
+    }
+    return undefined;
 }
 
 function makeInnerContainerElm() {
@@ -329,6 +354,12 @@ function goIntoFullscreen(e) {
     } else {
         t79Show.slideshowRunning = false;
     }
+
+    if (t79Show.THUMBNAIL_STRIP && t79Show.thumbnailsGenerated == false) {
+        makeThumbnailStrip();
+        t79Show.thumbnailsGenerated = true;
+    }
+
     styleContainerElm("goesIntoFullscreen");
     styleSelectedImageElm(this, "goesIntoFullscreen");
     t79Show.selectedImageElm = this;
@@ -336,6 +367,46 @@ function goIntoFullscreen(e) {
     updateNavigationButtons();
     positionImageView();
     //runSlideshow();
+
+    //t79Show.thumbnailStripElm.scrollTo({top: 300, behavior: 'smooth'})
+}
+
+function makeThumbnailStrip() {
+
+    const container = document.createElement("div");
+
+    let imageElm = document.querySelector("[data-galleryimageid='" + t79Show.idFirstImage + "']");
+    let thumbImageElm = document.createElement("img");
+    styleThumbnailImg(thumbImageElm, "initialize");
+    thumbImageElm.src = imageElm.src;
+    thumbImageElm.setAttribute("data-gallerythumbimageid", imageElm.getAttribute("data-galleryimageid"));
+    thumbImageElm.addEventListener("click", (e) => {
+        e.stopPropagation();
+        goToThisImage(e);
+    });
+    container.appendChild(thumbImageElm);
+
+    container.style.display = "flex";
+    container.style.flexFlow = "column nowrap";
+    container.style.justifyContent = "flex-start";
+    container.style.alignItems = "center";
+    container.style.gap = "1em";
+    container.style.width = "19em";
+
+    while (imageElm.getAttribute("data-nextgalleryimage") != undefined) {
+        imageElm = document.querySelector("[data-galleryimageid='" + imageElm.getAttribute("data-nextgalleryimage") + "']");
+        let thumbImageElm = document.createElement("img");
+        styleThumbnailImg(thumbImageElm, "initialize");
+        thumbImageElm.src = imageElm.src;
+        thumbImageElm.setAttribute("data-gallerythumbimageid", imageElm.getAttribute("data-galleryimageid"));
+        thumbImageElm.addEventListener("click", (e) => {
+            e.stopPropagation();
+            goToThisImage(e);
+        });
+        container.appendChild(thumbImageElm);
+    }
+
+    t79Show.thumbnailStripElm.appendChild(container);
 }
 
 function getImageAddress(image) {
@@ -360,6 +431,14 @@ function goToPreviousImage() {
     positionImageView();
 }
 
+function goToThisImage(e) {
+    const imageElm = document.querySelector("[data-galleryimageid='" + e.target.getAttribute("data-gallerythumbimageid") + "']");
+    changeSelectedImage(imageElm);
+    t79Show.imageViewElm.src = getImageAddress(imageElm);
+    updateNavigationButtons();
+    positionImageView();
+}
+
 function goToNextImage() {
     var nextImageId = t79Show.selectedImageElm.getAttribute("data-nextgalleryimage");
     if (nextImageId == undefined) {
@@ -376,15 +455,19 @@ function goToNextImage() {
             return;
         }
     }
-    console.log(nextImageId);
     const nextImageElm = document.querySelector("[data-galleryimageid='" + nextImageId + "']");
+    const nextThumbImageElm = document.querySelector("[data-gallerythumbimageid='" + nextImageId + "']");
+
     changeSelectedImage(nextImageElm);
     t79Show.imageViewElm.src = getImageAddress(nextImageElm);
     updateNavigationButtons();
     positionImageView();
+
+    t79Show.thumbnailStripElm.scrollTo({top: nextThumbImageElm.getBoundingClientRect().top, behavior: 'smooth'})
 }
 
 function positionImageView() {
+
     let imageWidth = 1;
     let imageHeight = 1;
     if (t79Show.selectedImageElm.getAttribute(t79Show.ALT_IMAGE_SIZE) != undefined) {
@@ -419,6 +502,22 @@ function positionImageView() {
         t79Show.imageViewElm.width = outerFrameWidth;
         t79Show.imageViewElm.height = outerFrameWidth / imageRatio; 
     }
+
+    const thumbnailStripRect = t79Show.thumbnailStripElm.getBoundingClientRect();
+    const navigationButLeftRect = t79Show.previousImageButtonElm.getBoundingClientRect();
+    const imageViewRect = t79Show.imageViewElm.getBoundingClientRect();
+
+    const margin = imageViewRect.x - thumbnailStripRect.right;
+    const caretWidth = navigationButLeftRect.right - navigationButLeftRect.x;
+    const marginMinusCaret = margin - caretWidth;
+    const halfMargin = marginMinusCaret * 0.4;
+
+    console.log(halfMargin + "px");
+    
+
+    t79Show.previousImageButtonElm.style.left = "calc(" + halfMargin + "px + 1em)";
+    t79Show.nextImageButtonElm.style.right = "calc(" + halfMargin + "px + 1.2em)";
+    t79Show.slideshowControllerContainerElm.style.left = "calc(" + halfMargin + "px + 1em)";
 
     styleImageViewElmClipPath(imageWidth, imageHeight, outerFrameWidth);
 }
@@ -496,10 +595,30 @@ function styleContainerElm(state) {
     }
 }
 
+function styleThumbnailStripElm(state) {
+    switch (state) {
+        case "initialize":
+            t79Show.thumbnailStripElm.style.width = "23em";
+            t79Show.thumbnailStripElm.style.height = "100vh";
+            t79Show.thumbnailStripElm.style.padding = "2em";
+            t79Show.thumbnailStripElm.style.overflow = "scroll";
+            t79Show.thumbnailStripElm.style.msOverflowStyle = "none";
+            t79Show.thumbnailStripElm.style.scrollbarWidth = "none";
+    }
+}
+
+function styleThumbnailImg(thumbImg, state) {
+    switch (state) {
+        case "initialize":
+            thumbImg.style.width = "100%";
+            thumbImg.style.height = "auto";
+            thumbImg.style.cursor = "pointer";
+    }
+}
+
 function styleInnerContainerElm(state) {
     switch (state) {
         case "initialize":
-            t79Show.innerContainerElm.style.width = "100%";
             t79Show.innerContainerElm.style.height = "100%";
             t79Show.innerContainerElm.style.display = "flex";
             t79Show.innerContainerElm.style.flexFlow = "column nowrap";
@@ -507,6 +626,12 @@ function styleInnerContainerElm(state) {
             t79Show.innerContainerElm.style.alignItems = "center";
             t79Show.innerContainerElm.style.position = "relative";
             t79Show.innerContainerElm.style.padding = t79Style.MARGIN;
+            break;
+        case "initialize partly":
+            t79Show.innerContainerElm.style.width = "calc(100% - 24em)";
+            break;
+        case "initialize full":
+            t79Show.innerContainerElm.style.width = "100%";
     }
 }
 
@@ -514,7 +639,7 @@ function styleSlideshowControllersContainerElm(state) {
     switch (state) {
         case "initialize":
             t79Show.slideshowControllerContainerElm.style.position = "absolute";
-            t79Show.slideshowControllerContainerElm.style.left = "1em";
+            //t79Show.slideshowControllerContainerElm.style.left = "1em";
             t79Show.slideshowControllerContainerElm.style.bottom = "calc(50% + 5em)";
             t79Show.slideshowControllerContainerElm.style.display = "flex";
             t79Show.slideshowControllerContainerElm.style.flexFlow = "column nowrap";
@@ -551,9 +676,10 @@ function styleNavigationButtonElm(buttonElm, state) {
             buttonElm.style.height = "3em";
             buttonElm.style.position = "absolute";
             buttonElm.style.bottom = "calc(50% - 1.5em)";
+            buttonElm.style.cursor = "pointer";
             break;
         case "initialize left":
-            buttonElm.style.left = "1em";
+            //buttonElm.style.left = "1em";
             break;
         case "initialize right":
             buttonElm.style.right = "1.2em";
