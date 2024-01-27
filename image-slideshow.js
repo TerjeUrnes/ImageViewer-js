@@ -1,31 +1,36 @@
 
 const t79Show = {
     //
-    AUTOPLAY : false,
-    LOOP : false,
-    NAVIGATION_CONTROLS : true,
-    SLIDESHOW_CONTROLS : true,
-    THUMBNAIL_STRIP: true,
+    DURATION : 5,
+    AUTOPLAY : "off",
+    LOOP : "off",
+    NAVIGATION_CONTROLS : "show",
+    SLIDESHOW_CONTROLS : "show",
+    THUMBNAIL_STRIP: "auto",
     //
     GALLERY_TAG_ATTRIBUTE : "data-gallery",
     GALLERY_CLASS_NAME : "gallery",
-    MARK_IMAGE_GROUPS : true,
+    MARK_IMAGE_GROUPS : "true",
     ALT_IMAGE_URL : "data-galleryimage",
     ALT_IMAGE_SIZE : "data-gallerysize",
+    THUMBNAIL_URL : "data-thumbnailimage",
+    THUMBNAIL_SIZE : "data-thumbnailsize",
     //
     LEFT_NAVIGATION_ARROW : "icons/caret-left-solid.svg",
     RIGHT_NAVIGATION_ARROW : "icons/caret-right-solid.svg",
     SLIDESHOW_PLAY : "icons/play-solid.svg",
     SLIDESHOW_PAUSE : "icons/pause-solid.svg",
     SLIDESHOW_INCREASE : "icons/caret-up-solid.svg",
-    SLIDESHOW_DECREASE : "icons/caret-down-solid.svg"
-}
-
-const t79Style = {
+    SLIDESHOW_DECREASE : "icons/caret-down-solid.svg",
+    OPEN_THUMBNAIL_STRIP : "icons/folder-solid.svg",
+    CLOSE_THUMBNAIL_STRIP : "icons/folder-open-solid.svg",
+    //
     BACKGROUND_COLOR : "#00000099",
-    BACKGROUND_BLUR : "10px",
+    BACKGROUND_BLUR : "15px",
     BASE_FONT_SIZE : "14px",
-    MARGIN : "2em"
+    IMAGE_PADDING : "2em",
+    THUMBNAIL_STRIP_PADDING : "1.5em",
+    THUMBNAIL_STRIP_WIDTH : "17em"
 }
 
 window.addEventListener('resize', function() {
@@ -36,127 +41,199 @@ window.addEventListener('resize', function() {
 });
 
 function slideshowInit() {
-    t79Show.slideshowDuration = 6;
-    if(t79Show.THUMBNAIL_STRIP) {
-        t79Show.thumbnailsGenerated = false;
-    }
+    setValues();
     generateSlideshowElm();
     getImages();
+}
 
-    var styleElement = document.createElement("style");
-    styleElement.appendChild(document.createTextNode("#slideshow-thumbnail-strip::-webkit-scrollbar {-webkit-appearance: none; display: none;}"));
-    document.getElementsByTagName("head")[0].appendChild(styleElement);
+function setValues() {
+    t79Show.slideshowDuration = t79Show.DURATION;
+    t79Show.thumbnailsGenerated = false;
 }
 
 function generateSlideshowElm() {
-    t79Show.containerElm = makeContainerElm();
-    t79Show.thumbnailStripElm = makeThumbnailStripElm();
-    t79Show.innerContainerElm = makeInnerContainerElm();
-    t79Show.previousImageButtonElm = makePreviousImageButtonElm();
-    t79Show.slideshowControllerContainerElm = makeSlideshowControllerContainer();
-    t79Show.slideshowPlayPauseButtonElm = makeSlideshowPlayPauseButtonElm();
-    t79Show.slideshowTimerContainerElm = makeSlideshowTimerContainerElm();
-    t79Show.slideshowIncreaseButtonElm = makeSlideshowIncreaseButtonElm();
-    t79Show.slideshowDecreaseButtonElm = makeSlideshowDecreaseButtonElm();
-    t79Show.slideshowTimerLabelElm = makeSlideshowTimerLabelElm();
-    t79Show.outerImageFrameElm = makeOuterImageFrameElm();
-    t79Show.innerImageFrameElm = makeInnerImageFrameElm();
-    t79Show.imageViewElm = makeImageViewElm();
-    t79Show.nextImageButtonElm = makeNextImageButtonElm();
+    makeElements();
+    addElements();
+}
 
+function makeElements() {
+    makeContainerElm();
+    makeThumbnailElm();
+    makeInnerContainerElm();
+    makeNavigationButtonsElm();
+    makeSlideshowControllerButtonsElm();
+    makeImageAndImageFramesElm();
+}
 
-    t79Show.slideshowControllerContainerElm.appendChild(t79Show.slideshowPlayPauseButtonElm);    
-    t79Show.slideshowControllerContainerElm.appendChild(t79Show.slideshowTimerContainerElm);
-    t79Show.slideshowTimerContainerElm.appendChild(t79Show.slideshowIncreaseButtonElm);
-    t79Show.slideshowTimerContainerElm.appendChild(t79Show.slideshowTimerLabelElm);
-    t79Show.slideshowTimerContainerElm.appendChild(t79Show.slideshowDecreaseButtonElm);
-    t79Show.innerImageFrameElm.appendChild(t79Show.imageViewElm);
-    t79Show.outerImageFrameElm.appendChild(t79Show.innerImageFrameElm);
-    t79Show.innerContainerElm.appendChild(t79Show.outerImageFrameElm);
-    t79Show.innerContainerElm.appendChild(t79Show.slideshowControllerContainerElm);
-    t79Show.innerContainerElm.appendChild(t79Show.previousImageButtonElm);
-    t79Show.innerContainerElm.appendChild(t79Show.nextImageButtonElm);
-    t79Show.containerElm.appendChild(t79Show.thumbnailStripElm);
-    t79Show.containerElm.appendChild(t79Show.innerContainerElm);
-
-    document.body.appendChild(t79Show.containerElm);
-
-    styleContainerElm("initialize");
-    styleInnerContainerElm("initialize");
-    if (t79Show.THUMBNAIL_STRIP) {
-        styleThumbnailStripElm("initialize");
-        styleInnerContainerElm("initialize partly");
-    } else {
-        styleInnerContainerElm("initialize full");
-    }
-    styleSlideshowControllersContainerElm("initialize");
-    styleSlideshowTimerContainerElm("initialize");
-    styleSliderControllersButtonsElm(t79Show.slideshowPlayPauseButtonElm, "initialize");
-    styleSliderControllersButtonsElm(t79Show.slideshowIncreaseButtonElm, "initialize");
-    styleSliderControllersButtonsElm(t79Show.slideshowTimerLabelElm, "initialize");
-    styleSliderControllersButtonsElm(t79Show.slideshowDecreaseButtonElm, "initialize");
-    styleNavigationButtonElm(t79Show.previousImageButtonElm, "initialize");
-    styleNavigationButtonElm(t79Show.previousImageButtonElm, "initialize left");
-    styleOuterFrameElm("initialize");
-    styleInnerFrameElm("initialize");
-    styleImageViewElm("initialize");
-    styleNavigationButtonElm(t79Show.nextImageButtonElm, "initialize");
-    styleNavigationButtonElm(t79Show.nextImageButtonElm, "initialize right");
+function addElements() {
+    addImageAndImageFramesElm();
+    addSlideshowControllerButtonsElm();
+    addNavigationButtonsElm();
+    addThumbnailElm();
+    addInnerContainerElm();
+    addContainerElm();
 }
 
 function makeContainerElm() {
-    const containerElm = document.createElement("div");
-    containerElm.id = "slideshow-container";
-    containerElm.addEventListener("click", goOutOfFullscreen);
-    return containerElm;
+    t79Show.containerElm = document.createElement("div");
+    t79Show.containerElm.id = "slideshow-container";
+    t79Show.containerElm.addEventListener("click", goOutOfFullscreen);
+    styleContainerElm("initialize");
+}
+
+function addContainerElm() {
+    document.body.appendChild(t79Show.containerElm);
+}
+
+function makeThumbnailElm() {
+    makeThumbnailControlElm();
+    makeThumbnailControlButtonElm();
+    makeThumbnailStripElm();
+}
+
+function addThumbnailElm() {
+    if (t79Show.THUMBNAIL_STRIP == "auto") {
+        t79Show.thumbnailControlElm.appendChild(t79Show.thumbnailControlButtonElm);
+        t79Show.containerElm.appendChild(t79Show.thumbnailControlElm);
+    }
+    if (t79Show.THUMBNAIL_STRIP != "off") {
+        t79Show.containerElm.appendChild(t79Show.thumbnailStripElm);
+    }
 }
 
 function makeThumbnailStripElm() {
-    if(t79Show.THUMBNAIL_STRIP) {
-        const thumbnailElm = document.createElement("div");
-        thumbnailElm.id = "slideshow-thumbnail-strip";
-        return thumbnailElm;
+    if(t79Show.THUMBNAIL_STRIP != "off") {
+        t79Show.thumbnailStripElm = document.createElement("div");
+        t79Show.thumbnailStripElm.id = "slideshow-thumbnail-strip";
+        styleThumbnailStripElm("initialize");
     }
-    return undefined;
+}
+
+function makeThumbnailControlElm() {
+    if (t79Show.THUMBNAIL_STRIP == "auto") {
+        t79Show.thumbnailControlElm = document.createElement("div");
+        t79Show.thumbnailControlElm.id = "slideshow-thumbnail-control";
+        styleThumbnailControlElm("initialize");
+    }
+}
+
+function makeThumbnailControlButtonElm() {
+    if (t79Show.THUMBNAIL_STRIP == "auto") {
+        t79Show.thumbnailControlButtonElm = document.createElement("img");
+        t79Show.thumbnailControlButtonElm.id = "slideshow-thumbnail-control-button";
+        t79Show.thumbnailControlButtonElm.setAttribute("data-thumbnail", "closed");
+        t79Show.thumbnailControlButtonElm.src = t79Show.OPEN_THUMBNAIL_STRIP;
+        t79Show.thumbnailControlButtonElm.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (e.target.getAttribute("data-thumbnail") == "closed") {
+                openThumbnailStrip();
+                t79Show.thumbnailControlButtonElm.src = t79Show.CLOSE_THUMBNAIL_STRIP;
+            }
+            else {
+                closeThumbnailStrip();
+                t79Show.thumbnailControlButtonElm.src = t79Show.OPEN_THUMBNAIL_STRIP;
+            }
+            
+        });
+        styleThumbnailControlButtonElm("initialize");
+    }
 }
 
 function makeInnerContainerElm() {
-    const innerContainerElm = document.createElement("div");
-    innerContainerElm.id = "slideshow-container";
-    return innerContainerElm;
+    t79Show.innerContainerElm = document.createElement("div");
+    t79Show.innerContainerElm.id = "slideshow-inner-container";
+    styleInnerContainerElm("initialize");
+    if(t79Show.THUMBNAIL_STRIP == "on") {
+        styleInnerContainerElm("initialize thumb open");
+    }
+    else if (t79Show.THUMBNAIL_STRIP == "auto") {
+        styleInnerContainerElm("initialize thumb closed");
+    }
+    else {
+        styleInnerContainerElm("initialize full");
+    }
 }
 
-function makeLeftControllersContainerElm() {
-    const leftContainerElm = document.createElement("div");
-    leftContainerElm.id = "slideshow-left-controllers-container";
-    return leftContainerElm;
+function addInnerContainerElm() {
+    t79Show.containerElm.appendChild(t79Show.innerContainerElm);
+}
+
+function makeNavigationButtonsElm() {
+    if(t79Show.NAVIGATION_CONTROLS == "show") {
+        makePreviousImageButtonElm();
+        makeNextImageButtonElm();
+    }
+}
+
+function addNavigationButtonsElm() {
+    if(t79Show.NAVIGATION_CONTROLS == "show") {
+        t79Show.innerContainerElm.appendChild(t79Show.previousImageButtonElm);
+        t79Show.innerContainerElm.appendChild(t79Show.nextImageButtonElm);
+    }
 }
 
 function makePreviousImageButtonElm() {
-    const previousButElm = document.createElement("img");
-    previousButElm.id = "slideshow-previous-image-button";
-    previousButElm.src = t79Show.LEFT_NAVIGATION_ARROW;
-    previousButElm.addEventListener("click", (e) => {
+    t79Show.previousImageButtonElm = document.createElement("img");
+    t79Show.previousImageButtonElm.id = "slideshow-previous-image-button";
+    t79Show.previousImageButtonElm.src = t79Show.LEFT_NAVIGATION_ARROW;
+    t79Show.previousImageButtonElm.addEventListener("click", (e) => {
         if (e.target.style.opacity == 1) {
             e.stopPropagation();
         }
         goToPreviousImage();
     });
-    return previousButElm;
+    styleNavigationButtonElm(t79Show.previousImageButtonElm, "initialize");
+    styleNavigationButtonElm(t79Show.previousImageButtonElm, "initialize left");
+}
+
+function makeNextImageButtonElm() {
+    t79Show.nextImageButtonElm = document.createElement("img");
+    t79Show.nextImageButtonElm.id = "slideshow-next-image-button";
+    t79Show.nextImageButtonElm.src = t79Show.RIGHT_NAVIGATION_ARROW;
+    t79Show.nextImageButtonElm.addEventListener("click", (e) => {        
+        if (e.target.style.opacity == 1) {
+            e.stopPropagation();
+        }
+        goToNextImage();
+    });
+    styleNavigationButtonElm(t79Show.nextImageButtonElm, "initialize");
+    styleNavigationButtonElm(t79Show.nextImageButtonElm, "initialize right");
+}
+
+function makeSlideshowControllerButtonsElm() {
+    if (t79Show.SLIDESHOW_CONTROLS == "show") {
+        makeSlideshowControllerContainer();
+        makeSlideshowPlayPauseButtonElm();
+        makeSlideshowTimerContainerElm();
+        makeSlideshowIncreaseButtonElm();
+        makeSlideshowTimerLabelElm();
+        makeSlideshowDecreaseButtonElm();
+    }
+}
+
+function addSlideshowControllerButtonsElm() {
+    if (t79Show.SLIDESHOW_CONTROLS == "show") {
+        t79Show.slideshowTimerContainerElm.appendChild(t79Show.slideshowIncreaseButtonElm);
+        t79Show.slideshowTimerContainerElm.appendChild(t79Show.slideshowTimerLabelElm);
+        t79Show.slideshowTimerContainerElm.appendChild(t79Show.slideshowDecreaseButtonElm);
+        t79Show.slideshowControllerContainerElm.appendChild(t79Show.slideshowPlayPauseButtonElm); 
+        t79Show.slideshowControllerContainerElm.appendChild(t79Show.slideshowTimerContainerElm);   
+        t79Show.innerContainerElm.appendChild(t79Show.slideshowControllerContainerElm);
+    }
 }
 
 function makeSlideshowControllerContainer() {
-    const controllerElm = document.createElement("div");
-    controllerElm.id = "slideshow-controller-container";
-    return controllerElm;
+    t79Show.slideshowControllerContainerElm = document.createElement("div");
+    t79Show.slideshowControllerContainerElm.id = "slideshow-controller-container";
+    styleSlideshowControllersContainerElm("initialize");
 }
 
 function makeSlideshowPlayPauseButtonElm() {
-    const playButElm = document.createElement("img");
-    playButElm.id = "slideshow-play-button";
-    playButElm.src = t79Show.SLIDESHOW_PLAY;
-    playButElm.setAttribute("data-playing", false);
-    playButElm.addEventListener("click", (e) => {
+    t79Show.slideshowPlayPauseButtonElm = document.createElement("img");
+    t79Show.slideshowPlayPauseButtonElm.id = "slideshow-play-button";
+    t79Show.slideshowPlayPauseButtonElm.src = t79Show.SLIDESHOW_PLAY;
+    t79Show.slideshowPlayPauseButtonElm.setAttribute("data-playing", false);
+    t79Show.slideshowPlayPauseButtonElm.addEventListener("click", (e) => {
         e.stopPropagation();
         if (e.target.getAttribute("data-playing") == "true") {
             stopSlideshow();
@@ -165,74 +242,75 @@ function makeSlideshowPlayPauseButtonElm() {
             runSlideshow();
         }
     });
-    return playButElm;
+    styleSliderControllersButtonsElm(t79Show.slideshowPlayPauseButtonElm, "initialize");
 }
 
 function makeSlideshowTimerContainerElm() {
-    const timerElm = document.createElement("div");
-    timerElm.id = "slideshow-timer-container";
-    return timerElm;
+    t79Show.slideshowTimerContainerElm = document.createElement("div");
+    t79Show.slideshowTimerContainerElm.id = "slideshow-timer-container";
+    styleSlideshowTimerContainerElm("initialize");
 }
 
 function makeSlideshowIncreaseButtonElm() {
-    const increaseButElm = document.createElement("img");
-    increaseButElm.id = "slideshow-increase-button";
-    increaseButElm.src = t79Show.SLIDESHOW_INCREASE;
-    increaseButElm.addEventListener("click", (e) => {
+    t79Show.slideshowIncreaseButtonElm = document.createElement("img");
+    t79Show.slideshowIncreaseButtonElm.id = "slideshow-increase-button";
+    t79Show.slideshowIncreaseButtonElm.src = t79Show.SLIDESHOW_INCREASE;
+    t79Show.slideshowIncreaseButtonElm.addEventListener("click", (e) => {
         e.stopPropagation();
         increaseSlideshowDuration()
     });
-    return increaseButElm;
+    styleSliderControllersButtonsElm(t79Show.slideshowIncreaseButtonElm, "initialize");
 }
 
 function makeSlideshowDecreaseButtonElm() {
-    const decreaseButElm = document.createElement("img");
-    decreaseButElm.id = "slideshow-decrease-button";
-    decreaseButElm.src = t79Show.SLIDESHOW_DECREASE;
-    decreaseButElm.addEventListener("click", (e) => {
+    t79Show.slideshowDecreaseButtonElm = document.createElement("img");
+    t79Show.slideshowDecreaseButtonElm.id = "slideshow-decrease-button";
+    t79Show.slideshowDecreaseButtonElm.src = t79Show.SLIDESHOW_DECREASE;
+    t79Show.slideshowDecreaseButtonElm.addEventListener("click", (e) => {
         e.stopPropagation();
         decreaseSlideshowDuration()
     });
-    return decreaseButElm;
+    styleSliderControllersButtonsElm(t79Show.slideshowDecreaseButtonElm, "initialize");
 }
 
 function makeSlideshowTimerLabelElm() {
-    const label = document.createElement("div");
-    label.id = "slideshow-timer-label";
-    label.innerText = t79Show.slideshowDuration;
-    return label;
+    t79Show.slideshowTimerLabelElm = document.createElement("div");
+    t79Show.slideshowTimerLabelElm.id = "slideshow-timer-label";
+    t79Show.slideshowTimerLabelElm.innerText = t79Show.slideshowDuration;
+    styleSliderControllersButtonsElm(t79Show.slideshowTimerLabelElm, "initialize");
+}
+
+function makeImageAndImageFramesElm() {
+    makeOuterImageFrameElm();
+    makeInnerImageFrameElm();
+    makeImageViewElm();
+}
+
+function addImageAndImageFramesElm() {
+    t79Show.innerImageFrameElm.appendChild(t79Show.imageViewElm);
+    t79Show.outerImageFrameElm.appendChild(t79Show.innerImageFrameElm);
+    t79Show.innerContainerElm.appendChild(t79Show.outerImageFrameElm);
 }
 
 function makeOuterImageFrameElm() {
-    const outerFrameElm = document.createElement("div");
-    outerFrameElm.id = "slideshow-outer-frame";
-    return outerFrameElm;
+    t79Show.outerImageFrameElm = document.createElement("div");
+    t79Show.outerImageFrameElm.id = "slideshow-outer-frame";
+    styleOuterFrameElm("initialize");
 }
 
 function makeInnerImageFrameElm() {
-    const innerFrameElm = document.createElement("div");
-    innerFrameElm.id = "slideshow-inner-frame";
-    return innerFrameElm;
+    t79Show.innerImageFrameElm = document.createElement("div");
+    t79Show.innerImageFrameElm.id = "slideshow-inner-frame";
+    styleInnerFrameElm("initialize");
 }
 
 function makeImageViewElm() {
-    const imageViewElm = document.createElement("img");
-    imageViewElm.id = "slideshow-image-view";
-    return imageViewElm;
+    t79Show.imageViewElm = document.createElement("img");
+    t79Show.imageViewElm.id = "slideshow-image-view";
+    styleImageViewElm("initialize");
 }
 
-function makeNextImageButtonElm() {
-    const nextButElm = document.createElement("img");
-    nextButElm.id = "slideshow-next-image-button";
-    nextButElm.src = t79Show.RIGHT_NAVIGATION_ARROW;
-    nextButElm.addEventListener("click", (e) => {        
-        if (e.target.style.opacity == 1) {
-            e.stopPropagation();
-        }
-        goToNextImage();
-    });
-    return nextButElm;
-}
+
 
 //
 //
@@ -349,14 +427,15 @@ function stopSlideshow() {
 }
 
 function goIntoFullscreen(e) {
-    if(t79Show.AUTOPLAY) {
+    if(t79Show.AUTOPLAY == "on") {
         runSlideshow()
     } else {
         t79Show.slideshowRunning = false;
     }
 
-    if (t79Show.THUMBNAIL_STRIP && t79Show.thumbnailsGenerated == false) {
+    if (t79Show.THUMBNAIL_STRIP == "on" && t79Show.thumbnailsGenerated == false) {
         makeThumbnailStrip();
+        styleThumbnailStripElm("open");
         t79Show.thumbnailsGenerated = true;
     }
 
@@ -369,6 +448,24 @@ function goIntoFullscreen(e) {
     //runSlideshow();
 
     //t79Show.thumbnailStripElm.scrollTo({top: 300, behavior: 'smooth'})
+}
+
+function openThumbnailStrip() {
+    t79Show.thumbnailControlButtonElm.setAttribute("data-thumbnail", "open");
+    styleInnerContainerElm("initialize thumb open");
+    if (t79Show.thumbnailsGenerated == false) {
+        makeThumbnailStrip();
+        t79Show.thumbnailsGenerated = true;
+    }
+    styleThumbnailStripElm("open");
+    positionImageView();
+}
+
+function closeThumbnailStrip() {
+    t79Show.thumbnailControlButtonElm.setAttribute("data-thumbnail", "closed");
+    styleThumbnailStripElm("close");
+    styleInnerContainerElm("initialize thumb closed");
+    positionImageView();
 }
 
 function makeThumbnailStrip() {
@@ -391,7 +488,7 @@ function makeThumbnailStrip() {
     container.style.justifyContent = "flex-start";
     container.style.alignItems = "center";
     container.style.gap = "1em";
-    container.style.width = "19em";
+    container.style.width = "100%";
 
     while (imageElm.getAttribute("data-nextgalleryimage") != undefined) {
         imageElm = document.querySelector("[data-galleryimageid='" + imageElm.getAttribute("data-nextgalleryimage") + "']");
@@ -404,6 +501,7 @@ function makeThumbnailStrip() {
             goToThisImage(e);
         });
         container.appendChild(thumbImageElm);
+        console.log("make strip");
     }
 
     t79Show.thumbnailStripElm.appendChild(container);
@@ -443,7 +541,7 @@ function goToNextImage() {
     var nextImageId = t79Show.selectedImageElm.getAttribute("data-nextgalleryimage");
     if (nextImageId == undefined) {
         if (t79Show.slideshowRunning) {
-            if (t79Show.slideshowLooping) {
+            if (t79Show.LOOP == "on") {
                 nextImageId = t79Show.idFirstImage;
             }
             else {
@@ -463,7 +561,7 @@ function goToNextImage() {
     updateNavigationButtons();
     positionImageView();
 
-    t79Show.thumbnailStripElm.scrollTo({top: nextThumbImageElm.getBoundingClientRect().top, behavior: 'smooth'})
+    //t79Show.thumbnailStripElm.scrollTo({top: nextThumbImageElm.getBoundingClientRect().top, behavior: 'smooth'})
 }
 
 function positionImageView() {
@@ -503,23 +601,38 @@ function positionImageView() {
         t79Show.imageViewElm.height = outerFrameWidth / imageRatio; 
     }
 
-    const thumbnailStripRect = t79Show.thumbnailStripElm.getBoundingClientRect();
-    const navigationButLeftRect = t79Show.previousImageButtonElm.getBoundingClientRect();
-    const imageViewRect = t79Show.imageViewElm.getBoundingClientRect();
+    if (t79Show.NAVIGATION_CONTROLS == "show" || t79Show.SLIDESHOW_CONTROLS == "show") {
 
-    const margin = imageViewRect.x - thumbnailStripRect.right;
-    const caretWidth = navigationButLeftRect.right - navigationButLeftRect.x;
-    const marginMinusCaret = margin - caretWidth;
-    const halfMargin = marginMinusCaret * 0.4;
-
-    console.log(halfMargin + "px");
+        let thumbnailStripRight = 0;
+        if (t79Show.THUMBNAIL_STRIP != "off") {
+            thumbnailStripRight = t79Show.thumbnailStripElm.getBoundingClientRect().right;
+        }
+        var navigationButLeftRect;
+        if (t79Show.NAVIGATION_CONTROLS == "show") {
+            navigationButLeftRect = t79Show.previousImageButtonElm.getBoundingClientRect();
+        }
+        else {
+            navigationButLeftRect = t79Show.slideshowControllerContainerElm.getBoundingClientRect();
+        }
+        const imageViewRect = t79Show.imageViewElm.getBoundingClientRect();
     
+        const margin = imageViewRect.x - thumbnailStripRight;
+        const caretWidth = navigationButLeftRect.right - navigationButLeftRect.x;
+        const marginMinusCaret = margin - caretWidth;
+        const halfMargin = marginMinusCaret * 0.4;
+    
+        console.log("margin: " + halfMargin);
 
-    t79Show.previousImageButtonElm.style.left = "calc(" + halfMargin + "px + 1em)";
-    t79Show.nextImageButtonElm.style.right = "calc(" + halfMargin + "px + 1.2em)";
-    t79Show.slideshowControllerContainerElm.style.left = "calc(" + halfMargin + "px + 1em)";
+        if (t79Show.NAVIGATION_CONTROLS == "show") {
+            t79Show.previousImageButtonElm.style.left = "calc(" + halfMargin + "px + 1em)";
+            t79Show.nextImageButtonElm.style.right = "calc(" + halfMargin + "px + 1.2em)";
+        }
+        if (t79Show.SLIDESHOW_CONTROLS == "show") {
+            t79Show.slideshowControllerContainerElm.style.left = "calc(" + halfMargin + "px + 1em)";
+        }
 
-    styleImageViewElmClipPath(imageWidth, imageHeight, outerFrameWidth);
+        styleImageViewElmClipPath(imageWidth, imageHeight, outerFrameWidth);
+    }
 }
 
 function goOutOfFullscreen(e) {
@@ -540,17 +653,19 @@ function changeSelectedImage(imageElm) {
 }
 
 function updateNavigationButtons() {
-    if (t79Show.selectedImageElm.getAttribute("data-previousgalleryimage") == undefined) {
-        styleNavigationButtonElm(t79Show.previousImageButtonElm, "hide");
-    }
-    else {
-        styleNavigationButtonElm(t79Show.previousImageButtonElm, "show");
-    }
-    if (t79Show.selectedImageElm.getAttribute("data-nextgalleryimage") == undefined) {
-        styleNavigationButtonElm(t79Show.nextImageButtonElm, "hide");
-    }
-    else {
-        styleNavigationButtonElm(t79Show.nextImageButtonElm, "show");
+    if (t79Show.NAVIGATION_CONTROLS == "show") {
+        if (t79Show.selectedImageElm.getAttribute("data-previousgalleryimage") == undefined) {
+            styleNavigationButtonElm(t79Show.previousImageButtonElm, "hide");
+        }
+        else {
+            styleNavigationButtonElm(t79Show.previousImageButtonElm, "show");
+        }
+        if (t79Show.selectedImageElm.getAttribute("data-nextgalleryimage") == undefined) {
+            styleNavigationButtonElm(t79Show.nextImageButtonElm, "hide");
+        }
+        else {
+            styleNavigationButtonElm(t79Show.nextImageButtonElm, "show");
+        }
     }
 }
 
@@ -570,13 +685,13 @@ function updateNavigationButtons() {
 function styleContainerElm(state) {
     switch (state) {
         case "initialize":
-            t79Show.containerElm.style.backgroundColor = t79Style.BACKGROUND_COLOR;
+            t79Show.containerElm.style.backgroundColor = t79Show.BACKGROUND_COLOR;
             t79Show.containerElm.style.position = "fixed";
             t79Show.containerElm.style.top = 0;
             t79Show.containerElm.style.left = 0;
             t79Show.containerElm.style.width = "100vw";
             t79Show.containerElm.style.height = "100vh";
-            t79Show.containerElm.style.fontSize = t79Style.BASE_FONT_SIZE;
+            t79Show.containerElm.style.fontSize = t79Show.BASE_FONT_SIZE;
             t79Show.containerElm.style.display = "none";
             t79Show.containerElm.style.flexFlow = "row nowrap";
             t79Show.containerElm.style.justifyContent = "space-between";
@@ -584,8 +699,8 @@ function styleContainerElm(state) {
             t79Show.containerElm.style.boxSizing = "border-box";
             t79Show.containerElm.style.overflow = "hidden";
             t79Show.containerElm.style.cursor = "zoom-out";
-            t79Show.containerElm.style.webkitBackdropFilter = `blur(${t79Style.BACKGROUND_BLUR})`;
-            t79Show.containerElm.style.backdropFilter = `blur(${t79Style.BACKGROUND_BLUR})`;
+            t79Show.containerElm.style.webkitBackdropFilter = `blur(${t79Show.BACKGROUND_BLUR})`;
+            t79Show.containerElm.style.backdropFilter = `blur(${t79Show.BACKGROUND_BLUR})`;
             break;
         case "goesIntoFullscreen":
             t79Show.containerElm.style.display = "flex";
@@ -595,16 +710,52 @@ function styleContainerElm(state) {
     }
 }
 
+function styleThumbnailControlElm(state) {
+    switch (state) {
+        case "initialize":
+            t79Show.thumbnailControlElm.style.display = "flex";
+            t79Show.thumbnailControlElm.style.flexFlow = "column nowrap";
+            t79Show.thumbnailControlElm.style.justifyContent = "flex-end";
+            t79Show.thumbnailControlElm.style.alignItems = "center";
+            t79Show.thumbnailControlElm.style.width = "2em";
+            t79Show.thumbnailControlElm.style.height = "calc(100% - 3em)";
+            t79Show.thumbnailControlElm.style.padding = "1.5em 0em 1.5em 1em";
+    }
+}
+
+function styleThumbnailControlButtonElm(state) {
+    switch (state) {
+        case "initialize":
+            t79Show.thumbnailControlButtonElm.style.width = "100%";
+            t79Show.thumbnailControlButtonElm.style.height = "auto";
+            t79Show.thumbnailControlButtonElm.style.cursor = "pointer";
+    }
+}
+
 function styleThumbnailStripElm(state) {
     switch (state) {
         case "initialize":
-            t79Show.thumbnailStripElm.style.width = "23em";
+            t79Show.thumbnailStripElm.style.display = "none";
+            t79Show.thumbnailStripElm.style.width = "20em";
             t79Show.thumbnailStripElm.style.height = "100vh";
             t79Show.thumbnailStripElm.style.padding = "2em";
             t79Show.thumbnailStripElm.style.overflow = "scroll";
             t79Show.thumbnailStripElm.style.msOverflowStyle = "none";
             t79Show.thumbnailStripElm.style.scrollbarWidth = "none";
+            turnOffThumbnailStripScrollBar();
+            break;
+        case "open":
+            t79Show.thumbnailStripElm.style.display = "block";
+            break;
+        case "close":
+            t79Show.thumbnailStripElm.style.display = "none";
     }
+}
+
+function turnOffThumbnailStripScrollBar() {
+    var styleElement = document.createElement("style");
+    styleElement.appendChild(document.createTextNode("#slideshow-thumbnail-strip::-webkit-scrollbar {-webkit-appearance: none; display: none;}"));
+    document.getElementsByTagName("head")[0].appendChild(styleElement);
 }
 
 function styleThumbnailImg(thumbImg, state) {
@@ -625,10 +776,13 @@ function styleInnerContainerElm(state) {
             t79Show.innerContainerElm.style.justifyContent = "center";
             t79Show.innerContainerElm.style.alignItems = "center";
             t79Show.innerContainerElm.style.position = "relative";
-            t79Show.innerContainerElm.style.padding = t79Style.MARGIN;
+            t79Show.innerContainerElm.style.padding = t79Show.IMAGE_PADDING;
             break;
-        case "initialize partly":
-            t79Show.innerContainerElm.style.width = "calc(100% - 24em)";
+        case "initialize thumb open":
+            t79Show.innerContainerElm.style.width = "calc(100% - 22em)";
+            break;
+        case "initialize thumb closed":
+            t79Show.innerContainerElm.style.width = "calc(100% - 3em)";
             break;
         case "initialize full":
             t79Show.innerContainerElm.style.width = "100%";
@@ -679,7 +833,7 @@ function styleNavigationButtonElm(buttonElm, state) {
             buttonElm.style.cursor = "pointer";
             break;
         case "initialize left":
-            //buttonElm.style.left = "1em";
+            buttonElm.style.left = "1em";
             break;
         case "initialize right":
             buttonElm.style.right = "1.2em";
@@ -739,17 +893,31 @@ function styleImageViewElm(state) {
 }
 
 function styleImageViewElmClipPath(imageWidth, imageHeight, outerFrameWidth) {
-    if (imageWidth < outerFrameWidth - 300) {
+    if (imageWidth < outerFrameWidth - 300 || 
+        (t79Show.NAVIGATION_CONTROLS == "hide" && t79Show.SLIDESHOW_CONTROLS == "hide")) {
         t79Show.imageViewElm.style.clipPath = "none";
         return;
     }
 
-    const showControllerRect = t79Show.slideshowControllerContainerElm.getBoundingClientRect();
-    const navigationButLeftRect = t79Show.previousImageButtonElm.getBoundingClientRect();
-    const navigationButRightRect = t79Show.nextImageButtonElm.getBoundingClientRect();
+    var showControllerRect;
+    var navigationButLeftRect;
+    var navigationButRightRect;
+
+    let showControlRightDistance = 0;
+    let navigationRightDistance = 0;
+
+    if (t79Show.SLIDESHOW_CONTROLS == "show") {
+        showControllerRect = t79Show.slideshowControllerContainerElm.getBoundingClientRect();
+        showControlRightDistance = showControllerRect.right;
+    }
+    if (t79Show.NAVIGATION_CONTROLS == "show") {
+        navigationButLeftRect = t79Show.previousImageButtonElm.getBoundingClientRect();
+        navigationButRightRect = t79Show.nextImageButtonElm.getBoundingClientRect();
+        navigationRightDistance = navigationButLeftRect.right;
+    }
     const imageViewRect = t79Show.imageViewElm.getBoundingClientRect();
 
-    if (Math.max(showControllerRect.right, navigationButLeftRect.right) < imageViewRect.x - 20) {
+    if (Math.max(showControlRightDistance, navigationRightDistance) < imageViewRect.x - 20) {
         t79Show.imageViewElm.style.clipPath = "none";
         return;
     }
@@ -759,17 +927,33 @@ function styleImageViewElmClipPath(imageWidth, imageHeight, outerFrameWidth) {
     const iL = imageViewRect.x;
     const iR = imageViewRect.right;
 
-    const scT = showControllerRect.y - imageViewRect.y - 15;
-    const scB = showControllerRect.bottom - imageViewRect.y + 10;
-    const scR = showControllerRect.right;
+    let scT = 0;
+    let scB = 0;
+    let scR = 0;
 
-    const nlT = navigationButLeftRect.y - imageViewRect.y - 20;
-    const nlB = navigationButLeftRect.bottom - imageViewRect.y + 20;
-    const nlR = navigationButLeftRect.right;
+    if (t79Show.SLIDESHOW_CONTROLS == "show") {
+        scT = showControllerRect.y - imageViewRect.y - 15;
+        scB = showControllerRect.bottom - imageViewRect.y + 10;
+        scR = showControllerRect.right;
+    }
 
-    const nrT = navigationButRightRect.y - imageViewRect.y - 20;
-    const nrB = navigationButRightRect.bottom - imageViewRect.y + 20;
-    const nrL = navigationButRightRect.x;
+    let nlT = 0;
+    let nlB = 0;
+    let nlR = 0;
+
+    let nrT = 0;
+    let nrB = 0;
+    let nrL = 0;
+
+    if (t79Show.NAVIGATION_CONTROLS == "show") {
+        nlT = navigationButLeftRect.y - imageViewRect.y - 15;
+        nlB = navigationButLeftRect.bottom - imageViewRect.y + 15;
+        nlR = navigationButLeftRect.right;
+    
+        nrT = navigationButRightRect.y - imageViewRect.y - 15;
+        nrB = navigationButRightRect.bottom - imageViewRect.y + 15;
+        nrL = navigationButRightRect.x;
+    }
 
     const c = 3;
 
@@ -778,18 +962,22 @@ function styleImageViewElmClipPath(imageWidth, imageHeight, outerFrameWidth) {
     const p6 = 'L' + iW + ',' + iH;
     const p7 = 'L' + iW + ',0';
 
+    let depth = 0;
+
     let path1 = '';
-    const dept = scR - iL + 10;
-    if (dept > 0) {
+    if (t79Show.SLIDESHOW_CONTROLS == "show") {
+        depth = scR - iL + 10;
+    }
+    if (depth > 0 && t79Show.SLIDESHOW_CONTROLS == "show") {
         const p1a = 'L0,' + (scT - c);
         const p1b = 'Q0,' + scT;
         const p1c = '' + c + ',' + scT;
-        const p2a = 'L' + (dept - c) + ',' + scT;
-        const p2b = 'Q' + dept + ',' + scT;
-        const p2c = '' + dept + ',' + (scT + c);
-        const p3a = 'L' + dept + ',' + (scB - c);
-        const p3b = 'Q' + dept + ',' + scB;
-        const p3c = '' + (dept - c) + ',' + scB;
+        const p2a = 'L' + (depth - c) + ',' + scT;
+        const p2b = 'Q' + depth + ',' + scT;
+        const p2c = '' + depth + ',' + (scT + c);
+        const p3a = 'L' + depth + ',' + (scB - c);
+        const p3b = 'Q' + depth + ',' + scB;
+        const p3c = '' + (depth - c) + ',' + scB;
         const p4a = 'L' + c + ',' + scB;
         const p4b = 'Q0,' + scB;
         const p4c = '0,' + (scB + c)
@@ -799,8 +987,11 @@ function styleImageViewElmClipPath(imageWidth, imageHeight, outerFrameWidth) {
     }
 
     let path2 = '';
-    const depth = nlR - iL + 15;
-    if (depth > 0 && t79Show.previousImageButtonElm.style.opacity > 0) {
+    depth = 0;
+    if (t79Show.NAVIGATION_CONTROLS == "show") {
+        depth = nlR - iL + 15;
+    }
+    if (depth > 0 && t79Show.NAVIGATION_CONTROLS == "show" && t79Show.previousImageButtonElm.style.opacity > 0) {
         const p5a = 'L0,' + (nlT - c);
         const p5b = 'Q0,' + nlT;
         const p5c = '' + c + ',' + nlT;
@@ -818,25 +1009,26 @@ function styleImageViewElmClipPath(imageWidth, imageHeight, outerFrameWidth) {
     }
 
     let path3 = '';
-    const depthe = iR - nrL + 15; 
-    if (depthe > 0 && t79Show.nextImageButtonElm.style.opacity > 0) {
+    depth = 0;
+    if (t79Show.NAVIGATION_CONTROLS == "show") {
+        depth = iR - nrL + 15; 
+    }
+    if (depth > 0 && t79Show.NAVIGATION_CONTROLS == "show" && t79Show.nextImageButtonElm.style.opacity > 0) {
         const p9a = 'L' + iW + ',' + (nrB + c);
         const p9b = 'Q' + iW + ',' + nrB;
         const p9c = '' + (iW - c) + ',' + nrB;
-        const p10a = 'L' + (iW - depthe + c) + ',' + nrB;
-        const p10b = 'Q' + (iW - depthe) + ',' + nrB;
-        const p10c = '' + (iW - depthe) + ',' + (nrB - c);
-        const p11a = 'L' + (iW - depthe) + ',' + (nrT + c);
-        const p11b = 'Q' + (iW - depthe) + ',' + nrT;
-        const p11c = '' + (iW - depthe + c) + ',' + nrT;
+        const p10a = 'L' + (iW - depth + c) + ',' + nrB;
+        const p10b = 'Q' + (iW - depth) + ',' + nrB;
+        const p10c = '' + (iW - depth) + ',' + (nrB - c);
+        const p11a = 'L' + (iW - depth) + ',' + (nrT + c);
+        const p11b = 'Q' + (iW - depth) + ',' + nrT;
+        const p11c = '' + (iW - depth + c) + ',' + nrT;
         const p12a = 'L' + (iW - c) + ',' + nrT;
         const p12b = 'Q' + iW + ',' + nrT;
         const p12c = '' + iW + ',' + (nrT - c);
 
         path3 = p9a + ' ' + p9b + ' ' + p9c + ' ' + p10a + ' ' + p10b + ' ' + p10c + ' ' + p11a + ' ' + p11b + ' ' + p11c + ' ' + p12a + ' ' + p12b + ' ' + p12c;
     }
-
-    
 
     const path = "'" + p0 + ' ' + path1 + ' ' + path2 + ' ' + p5 + ' ' + p6 + ' ' + path3 + p7 + " Z'";
 

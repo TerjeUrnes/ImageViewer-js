@@ -14,9 +14,9 @@ The image tag can be setup in different ways. All this examples will give a imag
 ```
 (1) <img src="street-1.jpg" width="1800" height="1200" style="width:100%; height:auto;>
 (2) <img src="street-2.jpg" class="gallery" width="1800" height="1200" style="width:100%; height:auto;>
-(2) <img src="street-4.jpg" width="1800" height="1200" style="width:100%; height:auto; data-gallery>
-(3) <img src="street-3.jpg" data-gallerysize="1800x1200" style="width:100%; height:auto;>
-(4) <img src="street-6-small.jpg" width="600" height="400" data-gallerysize="1800x1200" data-galleryimage="street-6.jpg">
+(3) <img src="street-4.jpg" width="1800" height="1200" style="width:100%; height:auto; data-gallery>
+(4) <img src="street-3.jpg" data-gallerysize="1800x1200" style="width:100%; height:auto;>
+(5) <img src="street-6-small.jpg" width="600" height="400" data-gallerysize="1800x1200" data-galleryimage="street-6.jpg">
 ```
 
 
@@ -26,9 +26,9 @@ The image tag can be setup in different ways. All this examples will give a imag
 |-------------|----------|---------|--------|-|
 | Slideshow autoplay when going into full screen. | AUTOPLAY | off | on | v0.1 |
 | Slideshow goes in loop. | LOOP | off | on | v0.1 |
-| Slideshow controllers visible | SLIDESHOW_CONTROLS | on | off | v0.1.2 |
-| Navigation controllers visible | NAVIGATION_CONTROLS | on | off | v0.1.2 |
-| Thumbnails list in full screen. | | auto | on, off | |
+| Slideshow controllers visible | SLIDESHOW_CONTROLS | on | off | v0.2 |
+| Navigation controllers visible | NAVIGATION_CONTROLS | on | off | v0.2 |
+| Thumbnails list in full screen. | | auto | on, off | v0.2 |
 | Image attribute marking | GALLERY_TAG_ATTRIBUTE | data-gallery | | v0.1 |
 | Image class marking | GALLERY_CLASS_NAME | gallery | | v0.1 |
 | Mark parent tags | MARK_IMAGE_GROUPS | true | false | v0.1 |
