@@ -1,4 +1,5 @@
-# .js Image Slideshow Gallery
+<picture><img src="webpage/gay_pride_flag.svg" width="50"></picture> <picture><img src="webpage/transgender_pride_flag.svg" width="50"></picture>
+# .js Image Slideshow Gallery 
 
 For a demo se the github pages: [https://terjeurnes.github.io/js-image-slideshow/](https://terjeurnes.github.io/js-image-slideshow/)
 
@@ -34,7 +35,6 @@ The image tag can be setup in different ways. All this examples will give a imag
 | Alternative image url attribute | ALT_IMAGE_URL | data-galleryimage | | v0.1 |
 | Alternative image size attribute | ALT_IMAGE_SIZE | data-gallerysize | | v0.1 |
 
-<picture>
- <img src="webpage/gay_pride_flag.svg" width="30">
-</picture>
+
+
 
