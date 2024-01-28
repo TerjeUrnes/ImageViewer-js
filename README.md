@@ -24,14 +24,14 @@ The image tag can be setup in different ways. All this examples will give a imag
 #### Customizing options:
 | Description | Constant | Default | Other | |
 |-------------|----------|---------|--------|-|
-| Slideshow autoplay when going into full screen. | AUTOPLAY | off | on | v0.1 |
-| Slideshow goes in loop. | LOOP | off | on | v0.1 |
-| Slideshow controllers visible | SLIDESHOW_CONTROLS | on | off | v0.2 |
-| Navigation controllers visible | NAVIGATION_CONTROLS | on | off | v0.2 |
-| Thumbnails list in full screen. | | auto | on, off | v0.2 |
-| Image attribute marking | GALLERY_TAG_ATTRIBUTE | data-gallery | | v0.1 |
-| Image class marking | GALLERY_CLASS_NAME | gallery | | v0.1 |
-| Mark parent tags | MARK_IMAGE_GROUPS | true | false | v0.1 |
+| Slideshow starts up when going into full screen. | AUTOPLAY | off | on | v0.1 |
+| Slideshow will loop after the last image. | LOOP | off | on | v0.1 |
+| Slideshow controllers is visible | SLIDESHOW_CONTROLS | on | off | v0.2 |
+| Navigation controllers is visible | NAVIGATION_CONTROLS | on | off | v0.2 |
+| Thumbnails list in full screen. | THUMBNAIL_STRIP | auto | on, off | v0.2 |
+| Image attribute marking that is used when gathering the images. | GALLERY_TAG_ATTRIBUTE | data-gallery | | v0.1 |
+| Image class alternative marking. | GALLERY_CLASS_NAME | gallery | | v0.1 |
+| Mark parent tags and all images in sub tags is gather.| MARK_IMAGE_GROUPS | true | false | v0.1 |
 | Alternative image url attribute | ALT_IMAGE_URL | data-galleryimage | | v0.1 |
 | Alternative image size attribute | ALT_IMAGE_SIZE | data-gallerysize | | v0.1 |
 

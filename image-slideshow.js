@@ -34,10 +34,12 @@ const t79Show = {
 }
 
 window.addEventListener('resize', function() {
-	positionImageView();
-	window.setTimeout(function() {
-		positionImageView();
-	}, 600);
+    if (t79Show.isInFullscreen) {
+        positionImageView();
+        window.setTimeout(function() {
+            positionImageView();
+        }, 600);
+    }
 });
 
 function slideshowInit() {
@@ -284,10 +286,12 @@ function makeImageAndImageFramesElm() {
     makeOuterImageFrameElm();
     makeInnerImageFrameElm();
     makeImageViewElm();
+    makeTextViewElm();
 }
 
 function addImageAndImageFramesElm() {
     t79Show.innerImageFrameElm.appendChild(t79Show.imageViewElm);
+    t79Show.innerImageFrameElm.appendChild(t79Show.textViewElm);
     t79Show.outerImageFrameElm.appendChild(t79Show.innerImageFrameElm);
     t79Show.innerContainerElm.appendChild(t79Show.outerImageFrameElm);
 }
@@ -308,6 +312,12 @@ function makeImageViewElm() {
     t79Show.imageViewElm = document.createElement("img");
     t79Show.imageViewElm.id = "slideshow-image-view";
     styleImageViewElm("initialize");
+}
+
+function makeTextViewElm() {
+    t79Show.textViewElm = document.createElement("div");
+    t79Show.textViewElm.id = "slideshow-text-view";
+    styleTextViewElm("initialize"); 
 }
 
 
@@ -364,7 +374,7 @@ function extractImages(rawSearchOutput) {
 }
 
 function searchImagesFromOneGroup(element) {
-    const images = element.querySelectorAll("img");
+    const images = element.querySelectorAll("img, div.text-slide");
     const imagesArray = Array.from(images);
     return imagesArray;
 }
@@ -380,6 +390,9 @@ function makeImagesReady(searchResult) {
         if (previousImage) {
             previousImage.setAttribute("data-nextgalleryimage", imageCount);
             element.setAttribute("data-previousgalleryimage", previousImage.getAttribute("data-galleryimageid"));
+        }
+        if (element.getAttribute("data-slidetext") != undefined) {
+            element.setAttribute("data-slideshown", "none");
         }
         previousImage = element;
         imageCount++;
@@ -445,7 +458,8 @@ function goIntoFullscreen(e) {
     t79Show.imageViewElm.src = getImageAddress(this);
     updateNavigationButtons();
     positionImageView();
-    //runSlideshow();
+
+    t79Show.isInFullscreen = true;
 
     //t79Show.thumbnailStripElm.scrollTo({top: 300, behavior: 'smooth'})
 }
@@ -521,18 +535,38 @@ function goToPreviousImage() {
     if (previousImageId == undefined) {
         return;
     }
+
     const previousImageElm = document.querySelector("[data-galleryimageid='" + previousImageId + "']");
-    changeSelectedImage(previousImageElm);
-    t79Show.imageViewElm.src = getImageAddress(previousImageElm);
-    console.log(previousImageElm);
+    
+    if (previousImageElm.getAttribute("data-slidetext") != undefined && previousImageElm.getAttribute("data-slideshown") == "none") {
+        t79Show.textViewElm.innerHTML = previousImageElm.getAttribute("data-slidetext");
+        t79Show.imageViewElm.style.display = "none";
+        t79Show.textViewElm.style.display = "flex";
+        changeSelectedImage(previousImageElm);
+        previousImageElm.setAttribute("data-slideshown", "text");
+    }
+    else {
+        t79Show.imageViewElm.src = getImageAddress(previousImageElm);
+        t79Show.imageViewElm.style.display = "block";
+        t79Show.textViewElm.style.display = "none";
+        previousImageElm.setAttribute("data-slideshown", "none")
+    }
+
+    if (previousImageElm.getAttribute("data-slidetext") == undefined) {
+        changeSelectedImage(previousImageElm);
+    }
+
     updateNavigationButtons();
     positionImageView();
 }
 
 function goToThisImage(e) {
     const imageElm = document.querySelector("[data-galleryimageid='" + e.target.getAttribute("data-gallerythumbimageid") + "']");
+    
     changeSelectedImage(imageElm);
     t79Show.imageViewElm.src = getImageAddress(imageElm);
+
+
     updateNavigationButtons();
     positionImageView();
 }
@@ -553,11 +587,26 @@ function goToNextImage() {
             return;
         }
     }
+    
     const nextImageElm = document.querySelector("[data-galleryimageid='" + nextImageId + "']");
+
+    if (nextImageElm.getAttribute("data-slidetext") != undefined && nextImageElm.getAttribute("data-slideshown") == "none") {
+        t79Show.textViewElm.innerHTML = nextImageElm.getAttribute("data-slidetext");
+        t79Show.imageViewElm.style.display = "none";
+        t79Show.textViewElm.style.display = "flex";
+        t79Show.numViews = 1;
+        nextImageElm.setAttribute("data-slideshown", "text");
+    }
+    else {
+        changeSelectedImage(nextImageElm);
+        t79Show.imageViewElm.src = getImageAddress(nextImageElm);
+        t79Show.imageViewElm.style.display = "block";
+        t79Show.textViewElm.style.display = "none";
+        t79Show.numViews = 0;
+        nextImageElm.setAttribute("data-slideshown", "none");
+    }
     const nextThumbImageElm = document.querySelector("[data-gallerythumbimageid='" + nextImageId + "']");
 
-    changeSelectedImage(nextImageElm);
-    t79Show.imageViewElm.src = getImageAddress(nextImageElm);
     updateNavigationButtons();
     positionImageView();
 
@@ -568,16 +617,23 @@ function positionImageView() {
 
     let imageWidth = 1;
     let imageHeight = 1;
-    if (t79Show.selectedImageElm.getAttribute(t79Show.ALT_IMAGE_SIZE) != undefined) {
+
+    const isImageView = t79Show.numViews != 1;
+
+    if (isImageView && t79Show.selectedImageElm.getAttribute(t79Show.ALT_IMAGE_SIZE) != undefined) {
         var width;
         var height;
         [width, height] = t79Show.selectedImageElm.getAttribute(t79Show.ALT_IMAGE_SIZE).split("x");
         imageWidth = parseInt(width);
         imageHeight = parseInt(height);
     }
-    else {
+    else if (isImageView) {
         imageWidth = t79Show.selectedImageElm.getAttribute("width");
         imageHeight = t79Show.selectedImageElm.getAttribute("height");
+    }
+    else {
+        imageWidth = t79Show.outerImageFrameElm.clientWidth;
+        imageHeight = t79Show.outerImageFrameElm.clientHeight;
     }
     const imageRatio = imageWidth / imageHeight;
     const outerFrameWidth = t79Show.outerImageFrameElm.clientWidth;
@@ -598,7 +654,7 @@ function positionImageView() {
         t79Show.innerImageFrameElm.style.width = `${outerFrameWidth}px`;
         t79Show.innerImageFrameElm.style.height = `${outerFrameWidth / imageRatio}px`;
         t79Show.imageViewElm.width = outerFrameWidth;
-        t79Show.imageViewElm.height = outerFrameWidth / imageRatio; 
+        t79Show.imageViewElm.height = outerFrameWidth / imageRatio;
     }
 
     if (t79Show.NAVIGATION_CONTROLS == "show" || t79Show.SLIDESHOW_CONTROLS == "show") {
@@ -614,15 +670,14 @@ function positionImageView() {
         else {
             navigationButLeftRect = t79Show.slideshowControllerContainerElm.getBoundingClientRect();
         }
-        const imageViewRect = t79Show.imageViewElm.getBoundingClientRect();
-    
+
+        var imageViewRect = t79Show.innerImageFrameElm.getBoundingClientRect();
+        
         const margin = imageViewRect.x - thumbnailStripRight;
         const caretWidth = navigationButLeftRect.right - navigationButLeftRect.x;
         const marginMinusCaret = margin - caretWidth;
         const halfMargin = marginMinusCaret * 0.4;
     
-        console.log("margin: " + halfMargin);
-
         if (t79Show.NAVIGATION_CONTROLS == "show") {
             t79Show.previousImageButtonElm.style.left = "calc(" + halfMargin + "px + 1em)";
             t79Show.nextImageButtonElm.style.right = "calc(" + halfMargin + "px + 1.2em)";
@@ -631,11 +686,14 @@ function positionImageView() {
             t79Show.slideshowControllerContainerElm.style.left = "calc(" + halfMargin + "px + 1em)";
         }
 
-        styleImageViewElmClipPath(imageWidth, imageHeight, outerFrameWidth);
+        if (isImageView ) {
+            styleImageViewElmClipPath(imageWidth, imageHeight, outerFrameWidth);
+        }
     }
 }
 
 function goOutOfFullscreen(e) {
+    t79Show.isInFullscreen = false;
     styleContainerElm("goesOutOfFullscreen");
     styleSelectedImageElm(t79Show.selectedImageElm, "comesOutOfFullscreen");
     t79Show.selectedImageElm = undefined;
@@ -755,6 +813,7 @@ function styleThumbnailStripElm(state) {
 function turnOffThumbnailStripScrollBar() {
     var styleElement = document.createElement("style");
     styleElement.appendChild(document.createTextNode("#slideshow-thumbnail-strip::-webkit-scrollbar {-webkit-appearance: none; display: none;}"));
+    styleElement.appendChild(document.createTextNode(".text-slide {display: none;}"));
     document.getElementsByTagName("head")[0].appendChild(styleElement);
 }
 
@@ -888,6 +947,21 @@ function styleSelectedImageElm(image, state) {
 function styleImageViewElm(state) {
     switch (state) {
         case "initialize":
+            break;
+    }
+}
+
+function styleTextViewElm(state) {
+    switch (state) {
+        case "initialize":
+            t79Show.textViewElm.style.width = "100%";
+            t79Show.textViewElm.style.height = "100%";
+            t79Show.textViewElm.style.display = "none";
+            t79Show.textViewElm.style.flexFlow = "column nowrap";
+            t79Show.textViewElm.style.justifyContent = "center";
+            t79Show.textViewElm.style.alignItems = "center";
+            t79Show.textViewElm.style.fontSize = "2.2em";
+            t79Show.textViewElm.style.textAlign = "center";
             break;
     }
 }
