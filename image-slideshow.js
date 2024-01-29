@@ -394,6 +394,9 @@ function makeImagesReady(searchResult) {
         if (element.getAttribute("data-slidetext") != undefined) {
             element.setAttribute("data-slideshown", "none");
         }
+        const ratio = element.width / element.height;
+        element.setAttribute("data-imageratio", ratio);
+
         previousImage = element;
         imageCount++;
     });
@@ -527,6 +530,10 @@ function makeThumbnailStrip() {
         imageElm = document.querySelector("[data-galleryimageid='" + imageElm.getAttribute("data-nextgalleryimage") + "']");
         let thumbImageElm = document.createElement("img");
         styleThumbnailImg(thumbImageElm, "initialize");
+        const imageWidth = imageElm.getAttribute("data-imageratio") / 1.33 * 100;
+        if (imageWidth < 100) {
+            styleThumbnailImg(thumbImageElm, "portrait", imageWidth);
+        }
         thumbImageElm.src = imageElm.src;
         thumbImageElm.setAttribute("data-gallerythumbimageid", imageElm.getAttribute("data-galleryimageid"));
         thumbImageElm.addEventListener("click", (e) => {
@@ -861,12 +868,15 @@ function turnOffThumbnailStripScrollBar() {
     document.getElementsByTagName("head")[0].appendChild(styleElement);
 }
 
-function styleThumbnailImg(thumbImg, state) {
+function styleThumbnailImg(thumbImg, state, width = 100) {
     switch (state) {
         case "initialize":
             thumbImg.style.width = "100%";
             thumbImg.style.height = "auto";
             thumbImg.style.cursor = "pointer";
+            break;
+        case "portrait":
+            thumbImg.style.width = width + "%";
     }
 }
 
