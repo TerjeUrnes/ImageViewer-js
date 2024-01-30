@@ -1,12 +1,17 @@
 <picture><img src="webpage/gay_pride_flag.svg" width="50"></picture> <picture><img src="webpage/transgender_pride_flag.svg" width="50"></picture>
 # .js Image Slideshow Gallery 
 
-For a demo se the github pages: [https://terjeurnes.github.io/js-image-slideshow/](https://terjeurnes.github.io/js-image-slideshow/)
+For a demo, see the GitHub pages.: [https://terjeurnes.github.io/js-image-slideshow/](https://terjeurnes.github.io/js-image-slideshow/)
 
-A simple full screen image viewer and slideshow. With some customizing possibilities. 
-It will auto discover any marked images or images under a mark parent. The marking can be an attribute or a class. E.g. `<img src="img01.jpg" data-gallery>`
+It is a simple fullscreen slideshow and image viewer. That auto detects all images on the page. There are also some features that are selectable, e.g. thumbnail view, autoplay and looping.
 
-Everything is collected in one file, `image-slideshow.js`. It is a module that exports the `slideshowInit()` function. You do not need to run the slideshow as a module, just remove the last line and use the script as normal.
+The slideshow/image viewer is all inside of one file. That only needs to add and call the initialize function `slideshowInit()`. It is an ECMA-script [module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules) that exports that function. If you do not want to use it as that, you only need to remove the last line.
+
+### Tagging the images
+
+The script can collect all images on the page by setting the `SELECT_ALL_IMAGES` constant, the default is `false`. The default behaviour is to select marked images or select all images under a marked parent tag. Marks can be attributes or a class name. The marks can be set in the `GALLERY_MARK_ATTRIBUTE` and `GALLERY_MARK_CLASS` constants, default is `data-gallery` and `gallery` respectively.
+
+E.g. `<img src="img01.jpg" data-gallery>` or `<img src="img01.jpg" class="gallery">` or under a parent `<div data-gallery><img src="img01.jpg"><img src="img02.jpg"><div><img src="img03.jpg"></div></div> <div class="gallery"><div><img src="img04.jpg"></div><div><img src="img05.jpg"><img src="img06.jpg"></div></div>` 
 
 
 
