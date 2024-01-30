@@ -8,9 +8,10 @@ const t79Show = {
     SLIDESHOW_CONTROLS : "show",
     THUMBNAIL_STRIP: "auto",
     //
-    GALLERY_TAG_ATTRIBUTE : "data-gallery",
-    GALLERY_CLASS_NAME : "gallery",
-    MARK_IMAGE_GROUPS : "true",
+    SELECT_ALL_IMAGES : "false",
+    TAG_PARENTS : "true",
+    GALLERY_MARK_ATTRIBUTE : "data-gallery",
+    GALLERY_MARK_CLASS : "gallery",
     ALT_IMAGE_URL : "data-galleryimage",
     ALT_IMAGE_SIZE : "data-gallerysize",
     THUMBNAIL_URL : "data-thumbnailimage",
@@ -346,11 +347,14 @@ function searchForImages() {
 }
 
 function constructSearchString() {
-    let searchString = "";
-    if (t79Show.MARK_IMAGE_GROUPS) {
-        searchString += "[" + t79Show.GALLERY_TAG_ATTRIBUTE + "] img, " + t79Show.GALLERY_CLASS_NAME + " img, ";
+    if (t79Show.SELECT_ALL_IMAGES) {
+        return "img";
     }
-    searchString += "img[" + t79Show.GALLERY_TAG_ATTRIBUTE + "], img." + t79Show.GALLERY_CLASS_NAME;
+    let searchString = "";
+    if (t79Show.TAG_PARENTS) {
+        searchString += "[" + t79Show.GALLERY_MARK_ATTRIBUTE + "] img, ." + t79Show.GALLERY_MARK_CLASS + " img, ";
+    }
+    searchString += "img[" + t79Show.GALLERY_MARK_ATTRIBUTE + "], img." + t79Show.GALLERY_MARK_CLASS;
     return searchString;
 }
 
