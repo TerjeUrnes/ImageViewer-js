@@ -3,7 +3,7 @@
 
 For a demo, see the GitHub pages.: [https://terjeurnes.github.io/js-image-slideshow/](https://terjeurnes.github.io/js-image-slideshow/)
 
-It is a simple fullscreen slideshow and image viewer. That auto detects all images. There are also some features that are selectable, e.g. thumbnail view, autoplay and looping.
+It is a simple fullscreen slideshow and image viewer. That auto detects all images. Some features are selectable, e.g. thumbnail view, autoplay and looping.
 
 ### Installing
 
@@ -15,27 +15,20 @@ The script can collect all images on the page by setting the `SELECT_ALL_IMAGES`
 
 E.g. `<img src="img01.jpg" data-gallery>` or `<img src="img01.jpg" class="gallery">` or under a parent, or one of its ancestors `<div data-gallery><img src="img01.jpg"><img src="img02.jpg"><div><img src="img03.jpg"></div></div> <div class="gallery"><div><img src="img04.jpg"></div><div><img src="img05.jpg"><img src="img06.jpg"></div></div>` 
 
-### My use case
-
-I use only the full-resolution image, with styling to set the view size. E.g. `<img src="img01.jpg" width="2200" height="1500" style="width: 100%; height: auto;">` 
-E.i. I am not using a separate image for the fullscreen view. I don't see any problem because of today's fast internet connections and tools such as ImageOptim that reduces image sizes[^1]. And I don't have sites with critical loading times. The positive with that is no loading time when going into fullscreen view.
 
 ### Usage: <br> Image URLs and sizes 🖼️  
 
-All images need a url and a size of the presented. It is different ways to set that.
+All images need a url and a size of the presented image. It is different ways to set that. The absolute minimum is that the src, width and height attribute is all set. If you want to use a different image, e.g. the src attribute points to a thumbnail. Use then the attributes set in the `ALT_IMAGE_URL` and `ALT_IMAGE_SIZE` constants. The default is "data-galleryimage" and "data-gallerysize", respectively. The size set in the ALT_IMAGE_SIZE attribute has to be in the format "<width>x<height>".
 
-The image tag can be setup in different ways. All this examples will give a image with size of 1800 x 1200 pixel.
-```
-(1) <img src="street-1.jpg" width="1800" height="1200" style="width:100%; height:auto;>
-(2) <img src="street-2.jpg" class="gallery" width="1800" height="1200" style="width:100%; height:auto;>
-(3) <img src="street-4.jpg" width="1800" height="1200" style="width:100%; height:auto; data-gallery>
-(4) <img src="street-3.jpg" data-gallerysize="1800x1200" style="width:100%; height:auto;>
-(5) <img src="street-6-small.jpg" width="600" height="400" data-gallerysize="1800x1200" data-galleryimage="street-6.jpg">
-```
+E.g. `<img src="street-1.jpg" width="1800" height="1200">` or `<img src="street-2-small.jpg" width="600" height="400" data-galleryimage="street-2.jpg" data-gallerysize="1800x1200">`
 
 
+### My use case
 
-#### Customizing options:
+I use only the full-resolution image, with styling to set the view size. E.g. `<img src="img01.jpg" width="2200" height="1500" style="width: 100%; height: auto;">` 
+E.i. I am not using a separate image for the fullscreen view. I don't see any problem because of today's fast internet connections and tools such as ImageOptim that reduce image sizes[^1]. And I don't have sites with critical loading times. The positive with that is no loading time when going into fullscreen view.
+
+### Customizing options:
 | Description | Constant | Default | Other | |
 |-------------|----------|---------|--------|-|
 | Slideshow starts up when going into full screen. | AUTOPLAY | off | on | v0.1 |
@@ -50,6 +43,6 @@ The image tag can be setup in different ways. All this examples will give a imag
 | Alternative image size attribute | ALT_IMAGE_SIZE | data-gallerysize | | v0.1 |
 
 
-[^1]: With that tool, the image in the example goes from a size of 1.9MB in full quality out of Lightroom to 400k. Or an 1800x1200, which is still a decent size,  goes from 1.4MB to 270k. All images in the demo site are 1800x1200.
+[^1]: With that tool, the image in the example goes from a size of 1.9MB in full quality out of Lightroom to 400k. Or an 1800x1200, which is still a decent size,  goes from 1.4MB to 270k. All images in the [demo](https://terjeurnes.github.io/js-image-slideshow/) are 1800x1200.
 
 
