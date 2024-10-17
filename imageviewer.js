@@ -630,7 +630,7 @@ class ImageViewContainer {
 class ImageCollection {
 
     _config = {
-        SELECT_ALL_IMAGES : "false",
+        SELECT_ALL_IMAGES : false,
         MARK_PARENTS : "true",
         GALLERY_MARK_ATTRIBUTE : "data-gallery",
         GALLERY_MARK_CLASS : "gallery"
