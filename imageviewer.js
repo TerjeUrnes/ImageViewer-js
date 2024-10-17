@@ -363,7 +363,7 @@ class ImageViewElements {
             case "initialize left":
                 button.style.left = "0.5em";
             case "initialize right":
-                button.style.right = "1.2em";
+                button.style.right = "0.5em";
             case "show":
                 button.style.opacity = 1;
                 button.style.cursor = "pointer";
@@ -397,7 +397,7 @@ class ImageViewElements {
         const cornerBottomLeft = `L0,${imageHeight}`;
         const cornerBottomRight = `L${imageWidth},${imageHeight}`;
 
-        const cornerRadius = 5;
+        const cornerRadius = 7;
 
         let leftNavClipPath = "";
         let rightNavClipPath = "";
