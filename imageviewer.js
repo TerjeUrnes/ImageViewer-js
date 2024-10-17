@@ -168,7 +168,7 @@ class ImageViewElements {
         NAVIGATION_CONTROLS: "visible",
         NAVIGATION_CONTROLS_MARGIN: 10,
         NAVIGATION_CONTROL_IMAGE_CLIPPING: true,
-        IMAGE_CORNER_RADIUS: "5px",
+        IMAGE_CORNER_RADIUS: 7,
 
         LEFT_NAVIGATION_ARROW : "icons/caret-left-solid.svg",
         RIGHT_NAVIGATION_ARROW : "icons/caret-right-solid.svg",
@@ -298,13 +298,15 @@ class ImageViewElements {
     }
 
     SetNavigationButtonsVisibility() {
-        if (this._image.getAttribute("data-nextgalleryimage") == undefined) {
+        if (this._image.getAttribute("data-nextgalleryimage") == undefined
+            || this._config.NAVIGATION_CONTROLS == "hidden") {
             this.StyleNavigationButton(this._nextButton, "hide");
         }
         else {
             this.StyleNavigationButton(this._nextButton, "show");
         }
-        if (this._image.getAttribute("data-previousgalleryimage") == undefined) {
+        if (this._image.getAttribute("data-previousgalleryimage") == undefined
+            || this._config.NAVIGATION_CONTROLS == "hidden") {
             this.StyleNavigationButton(this._previousButton, "hide");
         }
         else {
@@ -344,7 +346,7 @@ class ImageViewElements {
             case "initialize":
                 this._imageScreen.style.maxWidth = "100%";
                 this._imageScreen.style.maxHeight = "100%";
-                this._imageScreen.style.borderRadius = this._config.IMAGE_CORNER_RADIUS;
+                this._imageScreen.style.borderRadius = `${this._config.IMAGE_CORNER_RADIUS}px`;
                 this._imageScreen.style.backgroundColor = "transparent";
                 break;
         }
@@ -397,7 +399,7 @@ class ImageViewElements {
         const cornerBottomLeft = `L0,${imageHeight}`;
         const cornerBottomRight = `L${imageWidth},${imageHeight}`;
 
-        const cornerRadius = 7;
+        const cornerRadius = this._config.IMAGE_CORNER_RADIUS;
 
         let leftNavClipPath = "";
         let rightNavClipPath = "";
@@ -494,7 +496,7 @@ class ImageViewContainer {
     _config = {
         THUMBNAIL_STRIP: "auto",
         THUMBNAIL_STRIP_WIDTH: "20em",
-        BACKGROUND_COLOR: "#00000099",
+        BACKGROUND_COLOR: "#0009",
         BACKGROUND_BLUR: "15px",
         BASE_FONT_SIZE: "14px",
         IMAGE_MARGIN: "2em 3em"
@@ -630,7 +632,7 @@ class ImageViewContainer {
 class ImageCollection {
 
     _config = {
-        SELECT_ALL_IMAGES : false,
+        SELECT_ALL_IMAGES : "false",
         MARK_PARENTS : "true",
         GALLERY_MARK_ATTRIBUTE : "data-gallery",
         GALLERY_MARK_CLASS : "gallery"
