@@ -1,21 +1,22 @@
 
-const t79Show = {
+const config= {
     //
     DURATION : 5,
     AUTOPLAY : "off",
     LOOP : "off",
-    NAVIGATION_CONTROLS : "show",
-    SLIDESHOW_CONTROLS : "show",
+    NAVIGATION_CONTROLS : "visible",
+    SLIDESHOW_CONTROLS : "visible",
     THUMBNAIL_STRIP: "auto",
     //
     SELECT_ALL_IMAGES : "false",
-    TAG_PARENTS : "true",
+    MARK_PARENTS : "true",
     GALLERY_MARK_ATTRIBUTE : "data-gallery",
     GALLERY_MARK_CLASS : "gallery",
     ALT_IMAGE_URL : "data-galleryimage",
     ALT_IMAGE_SIZE : "data-gallerysize",
     THUMBNAIL_URL : "data-thumbnailimage",
     THUMBNAIL_SIZE : "data-thumbnailsize",
+    TEXT_SLIDE_TEXT : "data-slidetext",
     //
     LEFT_NAVIGATION_ARROW : "icons/caret-left-solid.svg",
     RIGHT_NAVIGATION_ARROW : "icons/caret-right-solid.svg",
@@ -91,6 +92,7 @@ function addContainerElm() {
 function makeThumbnailElm() {
     makeThumbnailControlElm();
     makeThumbnailControlButtonElm();
+    makeThumbnailStripContainerElm();
     makeThumbnailStripElm();
 }
 
@@ -99,13 +101,22 @@ function addThumbnailElm() {
         t79Show.thumbnailControlElm.appendChild(t79Show.thumbnailControlButtonElm);
         t79Show.containerElm.appendChild(t79Show.thumbnailControlElm);
     }
-    if (t79Show.THUMBNAIL_STRIP != "off") {
+    if (t79Show.THUMBNAIL_STRIP != "hidden") {
+        t79Show.thumbnailStripElm.appendChild(t79Show.thumbnailStripContainerElm);
         t79Show.containerElm.appendChild(t79Show.thumbnailStripElm);
     }
 }
 
+function makeThumbnailStripContainerElm() {
+    if (t79Show.THUMBNAIL_STRIP != "hidden") {
+        t79Show.thumbnailStripContainerElm = document.createElement("div");
+        t79Show.thumbnailStripContainerElm.id = "slideshow-thumbnail-strip-container";
+        styleThumbnailStripContainerElm("initialize");
+    }
+}
+
 function makeThumbnailStripElm() {
-    if(t79Show.THUMBNAIL_STRIP != "off") {
+    if(t79Show.THUMBNAIL_STRIP != "hidden") {
         t79Show.thumbnailStripElm = document.createElement("div");
         t79Show.thumbnailStripElm.id = "slideshow-thumbnail-strip";
         styleThumbnailStripElm("initialize");
@@ -146,7 +157,7 @@ function makeInnerContainerElm() {
     t79Show.innerContainerElm = document.createElement("div");
     t79Show.innerContainerElm.id = "slideshow-inner-container";
     styleInnerContainerElm("initialize");
-    if(t79Show.THUMBNAIL_STRIP == "on") {
+    if(t79Show.THUMBNAIL_STRIP == "visible") {
         styleInnerContainerElm("initialize thumb open");
     }
     else if (t79Show.THUMBNAIL_STRIP == "auto") {
@@ -162,14 +173,14 @@ function addInnerContainerElm() {
 }
 
 function makeNavigationButtonsElm() {
-    if(t79Show.NAVIGATION_CONTROLS == "show") {
+    if(t79Show.NAVIGATION_CONTROLS == "visible") {
         makePreviousImageButtonElm();
         makeNextImageButtonElm();
     }
 }
 
 function addNavigationButtonsElm() {
-    if(t79Show.NAVIGATION_CONTROLS == "show") {
+    if(t79Show.NAVIGATION_CONTROLS == "visible") {
         t79Show.innerContainerElm.appendChild(t79Show.previousImageButtonElm);
         t79Show.innerContainerElm.appendChild(t79Show.nextImageButtonElm);
     }
@@ -204,7 +215,7 @@ function makeNextImageButtonElm() {
 }
 
 function makeSlideshowControllerButtonsElm() {
-    if (t79Show.SLIDESHOW_CONTROLS == "show") {
+    if (t79Show.SLIDESHOW_CONTROLS == "visible") {
         makeSlideshowControllerContainer();
         makeSlideshowPlayPauseButtonElm();
         makeSlideshowTimerContainerElm();
@@ -215,7 +226,7 @@ function makeSlideshowControllerButtonsElm() {
 }
 
 function addSlideshowControllerButtonsElm() {
-    if (t79Show.SLIDESHOW_CONTROLS == "show") {
+    if (t79Show.SLIDESHOW_CONTROLS == "visible") {
         t79Show.slideshowTimerContainerElm.appendChild(t79Show.slideshowIncreaseButtonElm);
         t79Show.slideshowTimerContainerElm.appendChild(t79Show.slideshowTimerLabelElm);
         t79Show.slideshowTimerContainerElm.appendChild(t79Show.slideshowDecreaseButtonElm);
@@ -351,7 +362,7 @@ function constructSearchString() {
         return "img";
     }
     let searchString = "";
-    if (t79Show.TAG_PARENTS) {
+    if (t79Show.MARK_PARENTS) {
         searchString += "[" + t79Show.GALLERY_MARK_ATTRIBUTE + "] img, ." + t79Show.GALLERY_MARK_CLASS + " img, ";
     }
     searchString += "img[" + t79Show.GALLERY_MARK_ATTRIBUTE + "], img." + t79Show.GALLERY_MARK_CLASS;
@@ -395,7 +406,7 @@ function makeImagesReady(searchResult) {
             previousImage.setAttribute("data-nextgalleryimage", imageCount);
             element.setAttribute("data-previousgalleryimage", previousImage.getAttribute("data-galleryimageid"));
         }
-        if (element.getAttribute("data-slidetext") != undefined) {
+        if (element.getAttribute(t79Show.TEXT_SLIDE_TEXT) != undefined) {
             element.setAttribute("data-slideshown", "none");
         }
         const ratio = element.width / element.height;
@@ -472,7 +483,7 @@ function goIntoFullscreen(e) {
         t79Show.slideshowRunning = false;
     }
 
-    if (t79Show.THUMBNAIL_STRIP == "on" && t79Show.thumbnailsGenerated == false) {
+    if (t79Show.THUMBNAIL_STRIP == "visible" && t79Show.thumbnailsGenerated == false) {
         makeThumbnailStrip();
         styleThumbnailStripElm("open");
         t79Show.thumbnailsGenerated = true;
@@ -510,7 +521,6 @@ function closeThumbnailStrip() {
 
 function makeThumbnailStrip() {
 
-    const container = document.createElement("div");
 
     let imageElm = document.querySelector("[data-galleryimageid='" + t79Show.idFirstImage + "']");
     let thumbImageElm = document.createElement("img");
@@ -521,14 +531,7 @@ function makeThumbnailStrip() {
         e.stopPropagation();
         goToThisImage(e);
     });
-    container.appendChild(thumbImageElm);
-
-    container.style.display = "flex";
-    container.style.flexFlow = "column nowrap";
-    container.style.justifyContent = "flex-start";
-    container.style.alignItems = "center";
-    container.style.gap = "1em";
-    container.style.width = "100%";
+    t79Show.thumbnailStripContainerElm.appendChild(thumbImageElm);
 
     while (imageElm.getAttribute("data-nextgalleryimage") != undefined) {
         imageElm = document.querySelector("[data-galleryimageid='" + imageElm.getAttribute("data-nextgalleryimage") + "']");
@@ -544,11 +547,8 @@ function makeThumbnailStrip() {
             e.stopPropagation();
             goToThisImage(e);
         });
-        container.appendChild(thumbImageElm);
-        console.log("make strip");
+        t79Show.thumbnailStripContainerElm.appendChild(thumbImageElm);
     }
-
-    t79Show.thumbnailStripElm.appendChild(container);
 }
 
 function getImageAddress(image) {
@@ -564,7 +564,7 @@ function goToPreviousImage() {
     
     var imageElm;
     
-    if ((t79Show.selectedImageElm.getAttribute("data-slidetext") == undefined || t79Show.selectedImageElm.getAttribute("data-slideshown") == "none")) {
+    if ((t79Show.selectedImageElm.getAttribute(t79Show.TEXT_SLIDE_TEXT) == undefined || t79Show.selectedImageElm.getAttribute("data-slideshown") == "none")) {
         const previousImageId = t79Show.selectedImageElm.getAttribute("data-previousgalleryimage");
         if (previousImageId == undefined) {
             return;
@@ -574,13 +574,12 @@ function goToPreviousImage() {
         imageElm = t79Show.selectedImageElm;
     }
     
-    if (imageElm.getAttribute("data-slidetext") != undefined && imageElm.getAttribute("data-slideshown") == "none") {
-        t79Show.textViewElm.innerHTML = imageElm.getAttribute("data-slidetext");
+    if (imageElm.getAttribute(t79Show.TEXT_SLIDE_TEXT) != undefined && imageElm.getAttribute("data-slideshown") == "none") {
+        t79Show.textViewElm.innerHTML = imageElm.getAttribute(t79Show.TEXT_SLIDE_TEXT);
         t79Show.imageViewElm.style.display = "none";
         t79Show.textViewElm.style.display = "flex";
         changeSelectedImage(imageElm);
-        imageElm.setAttribute("data-slideshown", "text");
-        console.log("printet text: " + imageElm.getAttribute("data-galleryimageid"));
+        imageElm.setAttribute("data-slideshown", "text");    
     }
     else {
         t79Show.imageViewElm.src = getImageAddress(imageElm);
@@ -589,12 +588,10 @@ function goToPreviousImage() {
         if (imageElm.getAttribute("data-slideshown") != undefined) {
             imageElm.setAttribute("data-slideshown", "none");
         }
-        imageElm.setAttribute("data-slideshown", "none")
-        console.log("shown image: " + imageElm.getAttribute("data-galleryimageid"));
-
+        imageElm.setAttribute("data-slideshown", "none");
     }
 
-    if (imageElm.getAttribute("data-slidetext") == undefined) {
+    if (imageElm.getAttribute(t79Show.TEXT_SLIDE_TEXT) == undefined) {
         changeSelectedImage(imageElm);
     }
 
@@ -617,7 +614,7 @@ function goToNextImage() {
 
     var imageElm;
     
-    if ((t79Show.selectedImageElm.getAttribute("data-slidetext") == undefined || t79Show.selectedImageElm.getAttribute("data-slideshown") == "none")) {
+    if ((t79Show.selectedImageElm.getAttribute(t79Show.TEXT_SLIDE_TEXT) == undefined || t79Show.selectedImageElm.getAttribute("data-slideshown") == "none")) {
         var nextImageId = t79Show.selectedImageElm.getAttribute("data-nextgalleryimage");
         if (nextImageId == undefined) {
             if (t79Show.slideshowRunning) {
@@ -633,13 +630,14 @@ function goToNextImage() {
                 return;
             }
         }
+        console.log("next image: " + nextImageId);
         imageElm = document.querySelector("[data-galleryimageid='" + nextImageId + "']");
     } else {
         imageElm = t79Show.selectedImageElm;
     }
 
-    if (imageElm.getAttribute("data-slidetext") != undefined && imageElm.getAttribute("data-slideshown") == "none") {
-        t79Show.textViewElm.innerHTML = imageElm.getAttribute("data-slidetext");
+    if (imageElm.getAttribute(t79Show.TEXT_SLIDE_TEXT) != undefined && imageElm.getAttribute("data-slideshown") == "none") {
+        t79Show.textViewElm.innerHTML = imageElm.getAttribute(t79Show.TEXT_SLIDE_TEXT);
         t79Show.imageViewElm.style.display = "none";
         t79Show.textViewElm.style.display = "flex";
         changeSelectedImage(imageElm);
@@ -654,7 +652,7 @@ function goToNextImage() {
         imageElm.setAttribute("data-slideshown", "none");
     }
 
-    if (imageElm.getAttribute("data-slidetext") == undefined) {
+    if (imageElm.getAttribute(t79Show.TEXT_SLIDE_TEXT) == undefined) {
         changeSelectedImage(imageElm);
     }
 
@@ -712,14 +710,14 @@ function positionImageView() {
         t79Show.imageViewElm.height = outerFrameWidth / imageRatio;
     }
 
-    if (t79Show.NAVIGATION_CONTROLS == "show" || t79Show.SLIDESHOW_CONTROLS == "show") {
+    if (t79Show.NAVIGATION_CONTROLS == "visible" || t79Show.SLIDESHOW_CONTROLS == "visible") {
 
         let thumbnailStripRight = 0;
-        if (t79Show.THUMBNAIL_STRIP != "off") {
+        if (t79Show.THUMBNAIL_STRIP != "hidden") {
             thumbnailStripRight = t79Show.thumbnailStripElm.getBoundingClientRect().right;
         }
         var navigationButLeftRect;
-        if (t79Show.NAVIGATION_CONTROLS == "show") {
+        if (t79Show.NAVIGATION_CONTROLS == "visible") {
             navigationButLeftRect = t79Show.previousImageButtonElm.getBoundingClientRect();
         }
         else {
@@ -733,11 +731,11 @@ function positionImageView() {
         const marginMinusCaret = margin - caretWidth;
         const halfMargin = marginMinusCaret * 0.4;
     
-        if (t79Show.NAVIGATION_CONTROLS == "show") {
+        if (t79Show.NAVIGATION_CONTROLS == "visible") {
             t79Show.previousImageButtonElm.style.left = "calc(" + halfMargin + "px + 1em)";
             t79Show.nextImageButtonElm.style.right = "calc(" + halfMargin + "px + 1.2em)";
         }
-        if (t79Show.SLIDESHOW_CONTROLS == "show") {
+        if (t79Show.SLIDESHOW_CONTROLS == "visible") {
             t79Show.slideshowControllerContainerElm.style.left = "calc(" + halfMargin + "px + 1em)";
         }
 
@@ -766,7 +764,7 @@ function changeSelectedImage(imageElm) {
 }
 
 function updateNavigationButtons() {
-    if (t79Show.NAVIGATION_CONTROLS == "show") {
+    if (t79Show.NAVIGATION_CONTROLS == "visible") {
         if (t79Show.selectedImageElm.getAttribute("data-previousgalleryimage") == undefined) {
             styleNavigationButtonElm(t79Show.previousImageButtonElm, "hide");
         }
@@ -842,6 +840,18 @@ function styleThumbnailControlButtonElm(state) {
             t79Show.thumbnailControlButtonElm.style.width = "100%";
             t79Show.thumbnailControlButtonElm.style.height = "auto";
             t79Show.thumbnailControlButtonElm.style.cursor = "pointer";
+    }
+}
+
+function styleThumbnailStripContainerElm(state) {
+    switch (state) {
+        case "initialize":        
+        t79Show.thumbnailStripContainerElm.style.display = "flex";
+        t79Show.thumbnailStripContainerElm.style.flexFlow = "column nowrap";
+        t79Show.thumbnailStripContainerElm.style.justifyContent = "flex-start";
+        t79Show.thumbnailStripContainerElm.style.alignItems = "center";
+        t79Show.thumbnailStripContainerElm.style.gap = "1em";
+        t79Show.thumbnailStripContainerElm.style.width = "100%";
     }
 }
 
@@ -1026,7 +1036,7 @@ function styleTextViewElm(state) {
 
 function styleImageViewElmClipPath(imageWidth, imageHeight, outerFrameWidth) {
     if (imageWidth < outerFrameWidth - 300 || 
-        (t79Show.NAVIGATION_CONTROLS == "hide" && t79Show.SLIDESHOW_CONTROLS == "hide")) {
+        (t79Show.NAVIGATION_CONTROLS == "hidden" && t79Show.SLIDESHOW_CONTROLS == "hidden")) {
         t79Show.imageViewElm.style.clipPath = "none";
         return;
     }
@@ -1038,11 +1048,11 @@ function styleImageViewElmClipPath(imageWidth, imageHeight, outerFrameWidth) {
     let showControlRightDistance = 0;
     let navigationRightDistance = 0;
 
-    if (t79Show.SLIDESHOW_CONTROLS == "show") {
+    if (t79Show.SLIDESHOW_CONTROLS == "visible") {
         showControllerRect = t79Show.slideshowControllerContainerElm.getBoundingClientRect();
         showControlRightDistance = showControllerRect.right;
     }
-    if (t79Show.NAVIGATION_CONTROLS == "show") {
+    if (t79Show.NAVIGATION_CONTROLS == "visible") {
         navigationButLeftRect = t79Show.previousImageButtonElm.getBoundingClientRect();
         navigationButRightRect = t79Show.nextImageButtonElm.getBoundingClientRect();
         navigationRightDistance = navigationButLeftRect.right;
@@ -1063,7 +1073,7 @@ function styleImageViewElmClipPath(imageWidth, imageHeight, outerFrameWidth) {
     let scB = 0;
     let scR = 0;
 
-    if (t79Show.SLIDESHOW_CONTROLS == "show") {
+    if (t79Show.SLIDESHOW_CONTROLS == "visible") {
         scT = showControllerRect.y - imageViewRect.y - 15;
         scB = showControllerRect.bottom - imageViewRect.y + 10;
         scR = showControllerRect.right;
@@ -1077,7 +1087,7 @@ function styleImageViewElmClipPath(imageWidth, imageHeight, outerFrameWidth) {
     let nrB = 0;
     let nrL = 0;
 
-    if (t79Show.NAVIGATION_CONTROLS == "show") {
+    if (t79Show.NAVIGATION_CONTROLS == "visible") {
         nlT = navigationButLeftRect.y - imageViewRect.y - 15;
         nlB = navigationButLeftRect.bottom - imageViewRect.y + 15;
         nlR = navigationButLeftRect.right;
@@ -1097,10 +1107,10 @@ function styleImageViewElmClipPath(imageWidth, imageHeight, outerFrameWidth) {
     let depth = 0;
 
     let path1 = '';
-    if (t79Show.SLIDESHOW_CONTROLS == "show") {
+    if (t79Show.SLIDESHOW_CONTROLS == "visible") {
         depth = scR - iL + 10;
     }
-    if (depth > 0 && t79Show.SLIDESHOW_CONTROLS == "show") {
+    if (depth > 0 && t79Show.SLIDESHOW_CONTROLS == "visible") {
         const p1a = 'L0,' + (scT - c);
         const p1b = 'Q0,' + scT;
         const p1c = '' + c + ',' + scT;
@@ -1120,10 +1130,10 @@ function styleImageViewElmClipPath(imageWidth, imageHeight, outerFrameWidth) {
 
     let path2 = '';
     depth = 0;
-    if (t79Show.NAVIGATION_CONTROLS == "show") {
+    if (t79Show.NAVIGATION_CONTROLS == "visible") {
         depth = nlR - iL + 15;
     }
-    if (depth > 0 && t79Show.NAVIGATION_CONTROLS == "show" && t79Show.previousImageButtonElm.style.opacity > 0) {
+    if (depth > 0 && t79Show.NAVIGATION_CONTROLS == "visible" && t79Show.previousImageButtonElm.style.opacity > 0) {
         const p5a = 'L0,' + (nlT - c);
         const p5b = 'Q0,' + nlT;
         const p5c = '' + c + ',' + nlT;
@@ -1142,10 +1152,10 @@ function styleImageViewElmClipPath(imageWidth, imageHeight, outerFrameWidth) {
 
     let path3 = '';
     depth = 0;
-    if (t79Show.NAVIGATION_CONTROLS == "show") {
+    if (t79Show.NAVIGATION_CONTROLS == "visible") {
         depth = iR - nrL + 15; 
     }
-    if (depth > 0 && t79Show.NAVIGATION_CONTROLS == "show" && t79Show.nextImageButtonElm.style.opacity > 0) {
+    if (depth > 0 && t79Show.NAVIGATION_CONTROLS == "visible" && t79Show.nextImageButtonElm.style.opacity > 0) {
         const p9a = 'L' + iW + ',' + (nrB + c);
         const p9b = 'Q' + iW + ',' + nrB;
         const p9c = '' + (iW - c) + ',' + nrB;

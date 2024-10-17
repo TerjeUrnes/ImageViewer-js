@@ -1,11 +1,9 @@
-import { slideshowInit } from "../image-slideshow.js";
+import { ImageViewer } from "../imageviewer.js";
 
 document.addEventListener("readystatechange", (e) => {
     if (document.readyState === "complete") {
-        initSlides();
+        new ImageViewer({
+            "thumbnail_strip": "auto"
+        });
     }
 });
-
-function initSlides() {
-    slideshowInit();
-}
