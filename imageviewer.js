@@ -1,5 +1,20 @@
+/**
+ *  IMAGE VIEWER - js
+ *  a fullscreen image viewer in pure javascript
+ *  no dependencies
+ *  ==================
+ * 
+ *  license: MIT
+ *  Copyright (c) 2024 Terje Urnes
+ * 
+ *  version: v1.0.
+ */
 
 
+/**
+ * IMAGE VIEWER
+ * Main class.
+ */
 export class ImageViewer {
 
     static Instance;
@@ -18,8 +33,8 @@ export class ImageViewer {
                 this._config[key.toUpperCase()] = config[key];
             }
         })
-        this.ImageViewerInit(config);
         ImageViewer.Instance = this;
+        this.ImageViewerInit(config); 
     }
 
     ImageViewerInit(config) {
@@ -65,6 +80,10 @@ export class ImageViewer {
     }
 }
 
+
+/**
+ * IMAGE VIEW FRAME
+ */
 class ImageViewFrame {
 
     _config = {
@@ -124,12 +143,12 @@ class ImageViewFrame {
         const outerFrameRatio =  outerFrameWidth / outerFrameHeight;
 
         if (imageWidth < outerFrameWidth && imageHeight < outerFrameHeight) {
-            this._viewElements.SetImageScreenSize(imageWidth, imageHeight);
+            this._viewElements.SetImageSize(imageWidth, imageHeight);
         }
         else if (imageRatio > outerFrameRatio) {
-            this._viewElements.SetImageScreenSize(outerFrameWidth, outerFrameWidth / imageRatio);
+            this._viewElements.SetImageSize(outerFrameWidth, outerFrameWidth / imageRatio);
         } else {
-            this._viewElements.SetImageScreenSize(outerFrameHeight * imageRatio, outerFrameHeight);
+            this._viewElements.SetImageSize(outerFrameHeight * imageRatio, outerFrameHeight);
         }
 
         this._viewElements.StyleImageClipPath();
@@ -138,12 +157,17 @@ class ImageViewFrame {
    
 }
 
+
+/**
+ * IMAGE VIEW ELEMENTS
+ */
 class ImageViewElements {
     
     _config = {
         ALT_IMAGE_URL : "data-galleryimage",
         NAVIGATION_CONTROLS: "visible",
         NAVIGATION_CONTROLS_MARGIN: 10,
+        NAVIGATION_CONTROL_IMAGE_CLIPPING: true,
         IMAGE_CORNER_RADIUS: "5px",
 
         LEFT_NAVIGATION_ARROW : "icons/caret-left-solid.svg",
@@ -169,21 +193,10 @@ class ImageViewElements {
         this._imageScreen.src = imageSrc;
     }
 
-    get Image() {
-        return this._image;
-    }
-
-    get ImageScreen() {
-        return this._imageScreen;
-    }
-
-    get InnerFrame() {
-        return this._innerFrame;
-    }
-
-    get OuterFrame() {
-        return this._outerFrame;
-    }
+    get Image() { return this._image; }
+    get ImageScreen() { return this._imageScreen; }
+    get InnerFrame() { return this._innerFrame; }
+    get OuterFrame() { return this._outerFrame; }
 
     constructor(container, config) {
         Object.keys(config).forEach(key => {
@@ -196,7 +209,7 @@ class ImageViewElements {
         
     }
 
-    SetImageScreenSize(width, height) {
+    SetImageSize(width, height) {
 
         if (typeof width === "string") {
             this._innerFrame.style.width = width;
@@ -286,20 +299,16 @@ class ImageViewElements {
 
     SetNavigationButtonsVisibility() {
         if (this._image.getAttribute("data-nextgalleryimage") == undefined) {
-            this._nextButton.style.opacity = 0;
-            this._nextButton.style.cursor = "default";
+            this.StyleNavigationButton(this._nextButton, "hide");
         }
         else {
-            this._nextButton.style.opacity = 1;
-            this._nextButton.style.cursor = "pointer";
+            this.StyleNavigationButton(this._nextButton, "show");
         }
         if (this._image.getAttribute("data-previousgalleryimage") == undefined) {
-            this._previousButton.style.opacity = 0;
-            this._previousButton.style.cursor = "default";
+            this.StyleNavigationButton(this._previousButton, "hide");
         }
         else {
-            this._previousButton.style.opacity = 1;
-            this._previousButton.style.cursor = "pointer";
+            this.StyleNavigationButton(this._previousButton, "show");
         }
     }
 
@@ -355,13 +364,28 @@ class ImageViewElements {
                 button.style.left = "0.5em";
             case "initialize right":
                 button.style.right = "1.2em";
+            case "show":
+                button.style.opacity = 1;
+                button.style.cursor = "pointer";
+                break;
+            case "hide":
+                button.style.opacity = 0;
+                button.style.cursor = "default";
+                break;
         }
     }
 
     StyleImageClipPath() {
+
+        if (this._config.NAVIGATION_CONTROL_IMAGE_CLIPPING == false
+                        || this._config.NAVIGATION_CONTROLS == "hidden") {
+            this._imageScreen.style.clipPath = "none";
+            return;
+        }
+
         const imageScreenRect = this._imageScreen.getBoundingClientRect();
         const previousButtonRect = this._previousButton.getBoundingClientRect();
-        //const nextButtonRect = this._nextButton.getBoundingClientRect();
+        const nextButtonRect = this._nextButton.getBoundingClientRect();
 
         const imageWidth = imageScreenRect.right - imageScreenRect.x;
         const imageHeight = imageScreenRect.bottom - imageScreenRect.y;
@@ -376,7 +400,9 @@ class ImageViewElements {
         const cornerRadius = 5;
 
         let leftNavClipPath = "";
-        if (this._config.NAVIGATION_CONTROLS == "visible") {
+        let rightNavClipPath = "";
+
+        if (this._image.getAttribute("data-previousgalleryimage") != undefined) {
             const leftNavClipTop = previousButtonRect.y - imageScreenRect.y - this._config.NAVIGATION_CONTROLS_MARGIN;
             const leftNavClipRight = previousButtonRect.right + this._config.NAVIGATION_CONTROLS_MARGIN;
             const leftNavClipBottom = previousButtonRect.bottom - imageScreenRect.y + this._config.NAVIGATION_CONTROLS_MARGIN;
@@ -406,11 +432,46 @@ class ImageViewElements {
             }
         }
 
-        const clipPath = `${cornerTopLeft} ${leftNavClipPath} ${cornerBottomLeft} ${cornerBottomRight} ${cornerTopRight} Z`;
+        if (this._image.getAttribute("data-nextgalleryimage") != undefined) {
+            const rightNavClipTop = nextButtonRect.y - imageScreenRect.y - this._config.NAVIGATION_CONTROLS_MARGIN;
+            const rightNavClipLeft = nextButtonRect.x - this._config.NAVIGATION_CONTROLS_MARGIN;
+            const rightNavClipBottom = nextButtonRect.bottom - imageScreenRect.y + this._config.NAVIGATION_CONTROLS_MARGIN;
+
+            const rightNavDepth = imageRight - rightNavClipLeft;
+            console.log(rightNavDepth);
+
+            if (rightNavDepth > 0) {
+                const path = [];
+                path.push(`L${imageWidth}, ${rightNavClipBottom - cornerRadius}`);
+                path.push(`Q${imageWidth}, ${rightNavClipBottom}`);
+                path.push(`${imageWidth - cornerRadius}, ${rightNavClipBottom}`);
+                path.push(`L${imageWidth - rightNavDepth + cornerRadius}, ${rightNavClipBottom}`);
+                path.push(`Q${imageWidth - rightNavDepth}, ${rightNavClipBottom}`);
+                path.push(`${imageWidth - rightNavDepth}, ${rightNavClipBottom - cornerRadius}`);
+                path.push(`L${imageWidth - rightNavDepth}, ${rightNavClipTop + cornerRadius}`);
+                path.push(`Q${imageWidth - rightNavDepth}, ${rightNavClipTop}`);
+                path.push(`${imageWidth - rightNavDepth + cornerRadius}, ${rightNavClipTop}`);
+                path.push(`L${imageWidth - cornerRadius}, ${rightNavClipTop}`);
+                path.push(`Q${imageWidth}, ${rightNavClipTop}`);
+                path.push(`${imageWidth}, ${rightNavClipTop - cornerRadius}`);
+                for (let i = 0; i < path.length; i++) {
+                    rightNavClipPath += path[i];
+                    if (i < path.length - 1) {
+                        rightNavClipPath += " ";
+                    }
+                }
+            }
+        }
+
+        const clipPath = `${cornerTopLeft} ${leftNavClipPath} ${cornerBottomLeft} ${cornerBottomRight} ${rightNavClipPath} ${cornerTopRight} Z`;
         this._imageScreen.style.clipPath = `path('${clipPath}')`;
     }
 }
 
+
+/**
+ * 
+ */
 class ImageViewThumbnails {
     
     _container;
@@ -420,6 +481,10 @@ class ImageViewThumbnails {
     }
 }
 
+
+/**
+ * 
+ */
 class ImageViewContainer {
 
     _containerElm;
@@ -558,6 +623,10 @@ class ImageViewContainer {
     }
 }
 
+
+/**
+ * 
+ */
 class ImageCollection {
 
     _config = {
@@ -597,10 +666,6 @@ class ImageCollection {
         })
     }
 
-    /**
-     * 
-     * 
-     */
     SetupImages() {
         let id = 1;
         var previousImage;
