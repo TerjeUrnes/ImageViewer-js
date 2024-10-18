@@ -3,7 +3,7 @@ In pure vanilla JavaScript with no dependencies.
 It finds the images on the page. Ether all images or only those that is marked.
 # Image Viewer JS
 
-![Screenshot](webpage/screenshots/imageviewer01.png)
+![Screenshot](README/screenshots/imageviewer01.png)
 
 ## How to use
 
