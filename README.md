@@ -1,6 +1,8 @@
 Simple fullscreen image viewer.  
 In pure vanilla JavaScript with no dependencies.  
 It finds the images on the page. Ether all images or only those that is marked.
+
+v1.0.0
 # Image Viewer JS
 
 ![Screenshot](README/imageviewer01.png)
